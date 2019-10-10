@@ -1,15 +1,15 @@
+
+// callback a status code, & a payload object
 const handlers = {};
 
 
-handlers.hello = (data, callback) => {
-  // callback a status code, & a payload object
-  callback(406, {'hello': 'world'})
+handlers.ping = (data, callback) => {
+  callback(200);
 };
 
 
 const router = {
-  'hello' : handlers.hello
+  'ping' : handlers.ping
 };
-
 
 module.exports = router;

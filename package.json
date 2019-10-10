@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": false,
   "dependencies": {
+    "pg": "^7.12.1"
   },
   "scripts": {
     "start": "node server/app.js"
