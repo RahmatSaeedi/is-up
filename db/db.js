@@ -13,12 +13,11 @@ const pool = new Pool({
 const query = (queryString, values, cb) => {
   pool.query(queryString, values, (qErr,qResp) => {
 
-    if (typeof(cb) === "function")
+    if (typeof(cb) === "function") {
       cb(qErr, qResp);
+    }
   });
 };
 
 
-module.exports = {
-  query
-};
+module.exports = query;

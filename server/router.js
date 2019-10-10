@@ -1,15 +1,9 @@
-
-// callback a status code, & a payload object
-const handlers = {};
-
-
-handlers.ping = (data, callback) => {
-  callback(200);
-};
-
+const handlers = require('./handlers');
 
 const router = {
-  'ping' : handlers.ping
+  'users' : handlers.users,
+  'ping' : handlers.ping,
+  'notFound': handlers.notFound
 };
 
 module.exports = router;

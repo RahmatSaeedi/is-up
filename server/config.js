@@ -10,5 +10,6 @@ module.exports = {
     host,
     port,
     password
-  }
+  },
+  hashingSecret: 'topSecret'
 };

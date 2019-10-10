@@ -6,6 +6,7 @@ const fs = require('fs');
 const StringDecoder = require('string_decoder').StringDecoder;
 const config = require('./config');
 const router = require('./router');
+const helpers = require('../lib/helpers');
 
 
 
@@ -52,10 +53,10 @@ const unifiedServer = (req, res) => {
       query: parsedUrl.query,
       method : req.method.toLowerCase(),
       headers: req.headers,
-      payload
+      payload: helpers.parseJsonToObject(payload)
     };
     // choose the handler
-    const chosenHandler = typeof(router[path]) !== 'undefined' ? router[path] : notFound;
+    const chosenHandler = typeof(router[path]) !== 'undefined' ? router[path] : router.notFound;
     // route the request
     chosenHandler(data, (statusCode, response) => {
       statusCode = typeof(statusCode) === 'number' ? statusCode : 200;
@@ -68,12 +69,4 @@ const unifiedServer = (req, res) => {
       res.end(response);
     });
   });
-};
-
-
-/********************************
-    Not Found Handler
-********************************/
-const notFound = (data, callBack) => {
-  callBack(404);
 };

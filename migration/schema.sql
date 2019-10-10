@@ -2,3 +2,17 @@ CREATE DATABASE isup;
 \c isup;
 
 
+CREATE TABLE users (
+  uid SERIAL PRIMARY KEY NOT NULL UNIQUE,
+  firstName VARCHAR(255) NOT NULL,
+  lastName VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(64) NOT NULL,
+  tosAgreement BOOLEAN NOT NULL DEFAULT FALSE,
+  date_created DATE
+);
+
+
+
+
+\dt
