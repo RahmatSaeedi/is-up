@@ -9,7 +9,7 @@ module.exports = {
   png: 'image/png',
   tiff: 'image/tiff',
   icon: 'image/vnd.microsoft.icon',
-  x_icon:'image/x-icon',
+  xIcon:'image/x-icon',
   djvu: 'image/vnd.djvu',
   svg: 'image/svg+xml'
-}
+};
