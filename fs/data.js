@@ -23,7 +23,7 @@ const parseJsonToObject = (str) => {
 ********************************/
 lib.mkDir =  function(dirName, cb) {
   if (typeof(dirName) === 'string') {
-    fs.mkdir(lib.baseDir + '/' + dirName, (err) => {
+    fs.mkdir(lib.baseDir + dirName, (err) => {
       if (!err) {
         cb(false);
       } else {
@@ -48,6 +48,7 @@ lib.create = function(dir, fileName, dataObject, cb) {
   if (dir && fileName && dataObject && cb) {
     fs.open(lib.baseDir + dir + '/' + fileName + '.json', 'wx', (err, fileDiscriptor) => {
       if (!err && fileDiscriptor) {
+        dataObject.dateCreated = Date.now();
         fs.writeFile(fileDiscriptor, JSON.stringify(dataObject), (err) => {
           if (!err) {
             fs.close(fileDiscriptor, (err) => {
