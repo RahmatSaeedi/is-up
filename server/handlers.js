@@ -5,10 +5,17 @@ const helpers = require('../lib/helpers');
 
 
 const handlers = {};
+/****************************************************************
+  Configurations
+****************************************************************/
+const config = {
+  minPasswordLength: 10,
+  tokenIDLength: 32
+};
 
-/********************************
+/****************************************************************
   Validation helpers
-********************************/
+****************************************************************/
 const _is = {};
 
 _is.email = (email = '') => {
@@ -16,13 +23,17 @@ _is.email = (email = '') => {
   return typeof(email) === 'string' && email.trim().length > 0 && emailRegExp.test(email.trim().toLowerCase()) ? email.trim().toLowerCase() : false;
 };
 
-_is.str = (str = '', minLength = 0) => {
-  return typeof(str) === 'string' && str.trim().length > minLength ? str.trim() : false;
+_is.str = (str = '', minLength = 1, exactLength = false) => {
+  str = str.trim();
+  if (exactLength) {
+    str = str.length === minLength ? str : false;
+  }
+  return typeof(str) === 'string' && str.length >= minLength ? str : false;
 };
 
-/********************************
+/****************************************************************
   users Handler
-********************************/
+****************************************************************/
 handlers.users = (data, cb) => {
   const methods = ['post', 'get', 'put', 'delete'];
   if (methods.indexOf(data.method) > -1) {
@@ -34,13 +45,13 @@ handlers.users = (data, cb) => {
 handlers._users = {};
 
 // Users - post
-// Required data: firstName, lastName, email, password(10 characters, no leading or trailling whitespaces), tosAgreement
+// Required data: firstName, lastName, email, password($config.minPasswordLength characters, no leading or trailling whitespaces), tosAgreement
 // Optional data: none
 handlers._users.post = (data, cb) => {
   const firstName = _is.str(data.payload.firstName);
   const lastName = _is.str(data.payload.lastName);
   const email = _is.email(data.payload.email);
-  const password = _is.str(data.payload.password, 10);
+  const password = _is.str(data.payload.password, config.minPasswordLength);
   const tosAgreement = typeof(data.payload.tosAgreement) === 'boolean' && data.payload.tosAgreement === true ? true : false;
 
   if (firstName && lastName && email && password && tosAgreement) {
@@ -73,7 +84,7 @@ handlers._users.post = (data, cb) => {
       }
     });
   } else {
-    cb(400, {'Error' : 'Missing required fields.'});
+    cb(400, {'Error' : 'Missing or invalid fields.'});
   }
 };
 
@@ -95,7 +106,7 @@ handlers._users.get = (data, cb) => {
     });
 
   } else {
-    cb(400, {"Error" : "Missing required field."});
+    cb(400, {"Error" : "Missing or invalid fields."});
   }
 };
 
@@ -107,7 +118,7 @@ handlers._users.put = (data, cb) => {
   const email = _is.email(data.payload.email);
   const firstName = _is.str(data.payload.firstName);
   const lastName = _is.str(data.payload.lastName);
-  const password = _is.str(data.payload.password, 10);
+  const password = _is.str(data.payload.password, config.minPasswordLength);
 
   if (email && (firstName || lastName || password)) {
     _db.read('users', email, (err, userData) => {
@@ -134,7 +145,7 @@ handlers._users.put = (data, cb) => {
       }
     });
   } else {
-    cb(400, {'Error' : 'Missing required fields.'});
+    cb(400, {'Error' : 'Missing or invalid fields.'});
   }
 
 };
@@ -162,22 +173,157 @@ handlers._users.delete = (data, cb) => {
       }
     });
   } else {
-    cb(400, {"Error" : "Missing required field."});
+    cb(400, {"Error" : "Missing or invalid fields."});
   }
 };
 
+/****************************************************************
+  tokens Handler
+****************************************************************/
+handlers.tokens = (data, cb) => {
+  const methods = ['post', 'get', 'put', 'delete'];
+  if (methods.indexOf(data.method) > -1) {
+    handlers._tokens[data.method](data, cb);
+  } else {
+    cb(405);
+  }
+};
+handlers._tokens = {};
 
+// Tokens - post
+// Required data: email, password
+// Optional data: none
+handlers._tokens.post = (data, cb) => {
+  const email = _is.email(data.payload.email);
+  const password = _is.str(data.payload.password);
 
-/********************************
+  if (email && password) {
+    // Find the user
+    _db.read('users', email, (err, userData) => {
+      if (!err && userData) {
+        // Hash the password
+        const hashedPassword = helpers.hash(password);
+        if (hashedPassword === userData.password) {
+          const tokenId = helpers.createRandomString(config.tokenIDLength);
+          const expires = Date.now() + 1000 * 60 * 60; //+1 hour
+          
+          const tokenObject = {
+            email,
+            id: tokenId,
+            expires
+          };
+  
+          _db.create('tokens', tokenId, tokenObject, (err) => {
+            if (!err) {
+              cb(200, tokenObject);
+            } else {
+              cb(500, {'Error' : 'Could not create the new token.'});
+            }
+          });
+        } else {
+          cb(400, {'Error' : 'Incorrect password.'});
+        }
+      } else {
+        cb(400,{'Error': 'A user with that email was not found.'});
+      }
+    });
+  } else {
+    cb(400, {'Error' : 'Missing or invalid fields.'});
+  }
+};
+
+// Tokens - get
+// Required data: id
+// Optional data: none
+// @TODO authentication
+handlers._tokens.get = (data, cb) => {
+  const id = _is.str(String(data.query.id), config.tokenIDLength, true);
+
+  if (id) {
+    _db.read('tokens', id, (err, tokenData) => {
+      if (!err && tokenData) {
+        cb(200, tokenData);
+      } else {
+        cb(404);
+      }
+    });
+
+  } else {
+    cb(400, {"Error" : "Missing or invalid fields."});
+  }
+};
+
+// Tokens - put
+// Required data: id, extend
+// Optional data: none
+// @TODO authentication
+handlers._tokens.put = (data, cb) => {
+  const id = _is.str(data.payload.id, config.tokenIDLength, true);
+  const extend = typeof(data.payload.extend) === 'boolean' && data.payload.extend === true ? true : false;
+
+  if (extend) {
+    _db.read('tokens', id, (err, tokenData) => {
+      if (!err && tokenData) {
+        if (tokenData.expires > Date.now()) {
+          tokenData.expires = Date.now() + 1000 * 60 * 60;
+          _db.update('tokens', id, tokenData, (err) => {
+            if (!err) {
+              cb(200);
+            } else {
+              cb(500, {'Error' : 'Could not update the token\'s expiration.'});
+            }
+          });
+        } else {
+          _db.delete('tokens', id, () => {
+            cb(401, {'Error' : 'The token has already expired!'});
+          });
+        }
+      } else {
+        cb(404, {'Error': 'Specified token does not exist.'});
+      }
+    });
+  } else {
+    cb(400, {'Error' : 'Missing or invalid fields.'});
+  }
+
+};
+
+// Tokens - delete
+// Required data: id
+// Optional data: none
+// @TODO authentication
+handlers._tokens.delete = (data, cb) => {
+  const id = _is.str(data.query.id, config.tokenIDLength, true);
+
+  if (id) {
+    _db.read('tokens', id, (err) => {
+      if (!err) {
+        _db.delete('tokens', id, (err) => {
+          if (!err) {
+            cb(200);
+          } else {
+            cb(500, {"Error" : "Could not delete the specified token."});
+          }
+        });
+      } else {
+        cb(404, {"Error" : "Could not find the specified token."});
+      }
+    });
+  } else {
+    cb(400, {"Error" : "Missing or invalid fields."});
+  }
+};
+
+/****************************************************************
     PING Handler
-********************************/
+****************************************************************/
 handlers.ping = (data, cb) => {
   cb(200);
 };
 
-/********************************
+/****************************************************************
     Not Found Handler
-********************************/
+****************************************************************/
 handlers.notFound = (data, cb) => {
   cb(404);
 };

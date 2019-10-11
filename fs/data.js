@@ -4,6 +4,16 @@ const path = require('path');
 const lib = {};
 lib.baseDir = path.join(__dirname, '/.data/');
 
+/********************************
+  Adds add
+********************************/
+const addAdditionalFields = {};
+addAdditionalFields.users = {
+  create: (o = {}) => {
+    o.dateCreated = Date.now();
+  }
+};
+
 
 /********************************
   Parses a string to
@@ -48,7 +58,13 @@ lib.create = function(dir, fileName, dataObject, cb) {
   if (dir && fileName && dataObject && cb) {
     fs.open(lib.baseDir + dir + '/' + fileName + '.json', 'wx', (err, fileDiscriptor) => {
       if (!err && fileDiscriptor) {
-        dataObject.dateCreated = Date.now();
+        
+        // Conditional additional db/server-side fields
+        if (addAdditionalFields[dir] && addAdditionalFields[dir].create) {
+          addAdditionalFields[dir].create(dataObject);
+        }
+        // Conditional additional fields Ends
+
         fs.writeFile(fileDiscriptor, JSON.stringify(dataObject), (err) => {
           if (!err) {
             fs.close(fileDiscriptor, (err) => {
