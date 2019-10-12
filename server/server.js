@@ -1,38 +1,41 @@
 const http = require('http');
 const https = require('https');
-
 const url = require('url');
 const fs = require('fs');
 const StringDecoder = require('string_decoder').StringDecoder;
+
 const config = require('../config');
 const router = require('./router');
 const helpers = require('../lib/helpers');
-
-
+const path = require('path');
 
 
 // Server initiation & setup
-const httpsServerOptions = {
-  'key': fs.readFileSync(config.pathToSslKey),
-  'cert': fs.readFileSync(config.pathToSslCert)
+const server = {};
+server.httpsServerOptions = {
+  'key': fs.readFileSync(path.join(__dirname, '/https/key.pem')),
+  'cert': fs.readFileSync(path.join(__dirname, '/https/cert.pem'))
 };
+server.httpServer = http.createServer((req, res) => server.unifiedServer(req, res));
+server.httpsServer = https.createServer(server.httpsServerOptions, (req, res) => server.unifiedServer(req, res));
 
-const httpServer = http.createServer((req, res) => unifiedServer(req, res));
-const httpsServer = https.createServer(httpsServerOptions, (req, res) => unifiedServer(req, res));
 
 
-httpServer.listen(config.httpPort, ()=> {
-  console.log(`HTTP server is listening on port ${config.httpPort}.`);
-});
-httpsServer.listen(config.httpsPort, ()=> {
-  console.log(`HTTPS server is listening on port ${config.httpsPort}.`);
-});
+server.init = () => {
+  server.httpServer.listen(config.httpPort, ()=> {
+    console.log(`HTTP server is listening on port ${config.httpPort}.`);
+  });
+
+  server.httpsServer.listen(config.httpsPort, ()=> {
+    console.log(`HTTPS server is listening on port ${config.httpsPort}.`);
+  });
+};
 
 
 /********************************
           Unified Server
 ********************************/
-const unifiedServer = (req, res) => {
+server.unifiedServer = (req, res) => {
   // Gets the URL, parse it, & trim the leading and trailling '/'
   const parsedUrl = url.parse(req.url, true);
   const path = parsedUrl.pathname.replace(/^\/+|\/+$/g,'');
@@ -70,3 +73,6 @@ const unifiedServer = (req, res) => {
     });
   });
 };
+
+
+module.exports = server;

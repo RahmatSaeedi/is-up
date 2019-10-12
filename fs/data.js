@@ -5,7 +5,8 @@ const lib = {};
 lib.baseDir = path.join(__dirname, '/.data/');
 
 /********************************
-  Adds add
+  Adds additional fields
+  perior to saving a file
 ********************************/
 const addAdditionalFields = {};
 addAdditionalFields.users = {
@@ -19,7 +20,7 @@ addAdditionalFields.users = {
   Parses a string to
   JSON without throwing
 ********************************/
-const parseJsonToObject = (str) => {
+const parseJsonToObject = (str = '') => {
   try {
     return JSON.parse(str);
   } catch (e) {
@@ -31,7 +32,7 @@ const parseJsonToObject = (str) => {
 /********************************
  create new directory
 ********************************/
-lib.mkDir =  function(dirName, cb) {
+lib.mkDir =  function(dirName = '', cb = (err)=>{}) {
   if (typeof(dirName) === 'string') {
     fs.mkdir(lib.baseDir + dirName, (err) => {
       if (!err) {
@@ -49,7 +50,7 @@ lib.mkDir =  function(dirName, cb) {
 /********************************
   Writes data to a new file
 ********************************/
-lib.create = function(dir, fileName, dataObject, cb) {
+lib.create = function(dir = '', fileName = '', dataObject = {}, cb  = (err)=>{}) {
   dir = typeof(dir) === 'string' ? dir : false;
   fileName = typeof(fileName) === 'string' ? fileName : false;
   dataObject = typeof(dataObject) === 'object' ? dataObject : false;
@@ -91,7 +92,7 @@ lib.create = function(dir, fileName, dataObject, cb) {
 /********************************
   Read data from a file
 ********************************/
-lib.read = function(dir, fileName, cb) {
+lib.read = function(dir = '', fileName = '', cb = (err, data)=>{}) {
   dir = typeof(dir) === 'string' ? dir : false;
   fileName = typeof(fileName) === 'string' ? fileName : false;
   cb = typeof(cb) === 'function' ? cb : false;
@@ -113,7 +114,7 @@ lib.read = function(dir, fileName, cb) {
 /********************************
   Update data on a file
 ********************************/
-lib.update = function(dir, fileName, dataObject, cb) {
+lib.update = function(dir = '', fileName = '', dataObject = {}, cb = (err)=>{}) {
   dir = typeof(dir) === 'string' ? dir : false;
   fileName = typeof(fileName) === 'string' ? fileName : false;
   dataObject = typeof(dataObject) === 'object' ? dataObject : false;
@@ -155,7 +156,7 @@ lib.update = function(dir, fileName, dataObject, cb) {
 /********************************
   Delete a file
 ********************************/
-lib.delete = function(dir, fileName, cb, cascadeDelete = true) {
+lib.delete = function(dir = '', fileName = '', cb  = (err)=>{}, cascadeDelete = true) {
   dir = typeof(dir) === 'string' ? dir : false;
   fileName = typeof(fileName) === 'string' ? fileName : false;
   cb = typeof(cb) === 'function' ? cb : false;
@@ -185,7 +186,7 @@ lib.delete = function(dir, fileName, cb, cascadeDelete = true) {
 ********************************/
 const cascade = {};
 cascade.users = {
-  filesToDelete: (fileName) => {
+  filesToDelete: (fileName = '') => {
     fileName = typeof(fileName) === 'string' ? fileName : false;
 
     if (fileName) {
@@ -208,6 +209,28 @@ cascade.users = {
   }
 };
 
+/********************************
+  List all file in a directory
+********************************/
+lib.list = (dir = '', cb = (err, data)=>{}) => {
+  dir = typeof(dir) === 'string' ? dir : false;
+  cb = typeof(cb) === 'function' ? cb : false;
+  if (dir && cb) {
+    fs.readdir(lib.baseDir + dir + '/', (err, data) => {
+      if (!err && data) {
+        const trimmedFileNames = [];
+        data.forEach((fileName) => {
+          trimmedFileNames.push(fileName.replace('.json',''));
+        });
+        cb(false, trimmedFileNames);
+      } else {
+        cb(err, data);
+      }
+    });
+  } else {
+    cb("Expected string value for 'dir' and 'function' for 'cb'.");
+  }
+};
 
 
 module.exports = lib;

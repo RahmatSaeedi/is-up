@@ -6,6 +6,6 @@
     "pg": "^7.12.1"
   },
   "scripts": {
-    "start": "node server/server.js"
+    "start": "node app.js"
   }
 }

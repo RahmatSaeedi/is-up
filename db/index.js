@@ -254,8 +254,28 @@ lib.delete = function(tableName, uID, cb) {
 };
 
 
+/********************************
+  List all uID
+********************************/
+lib.list = function(tableName, cb) {
+  tableName = typeof(tableName) === 'string' && permittedTables.indexOf(tableName) > -1 ? permittedTables[permittedTables.indexOf(tableName)] : false;
+  cb = typeof(cb) === 'function' ? cb : false;
 
+  if (tableName && cb) {
+    const uID = tableName === 'users' ? 'email' : 'id';
 
+    query(`SELECT ${uID} FROM ${tableName}`, null, (qErr, qRes) => {
+      if (!qErr && qRes.rows) {
+        console.log(qRes.rows);
+        cb(false, qRes.rows);
+      } else {
+        cb("Could not retrive the data from db.");
+      }
+    });
+  } else {
+    cb("Expected string value for 'tableName' and function for 'cb'.");
+  }
+};
 
 
 
