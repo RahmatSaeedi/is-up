@@ -4,7 +4,7 @@ const https = require('https');
 const url = require('url');
 const fs = require('fs');
 const StringDecoder = require('string_decoder').StringDecoder;
-const config = require('./config');
+const config = require('../config');
 const router = require('./router');
 const helpers = require('../lib/helpers');
 

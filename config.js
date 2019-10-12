@@ -1,4 +1,4 @@
-const { user, host, port, password } = require('../../../psqlConfig');
+const { user, host, port, password } = require('../../psqlConfig');
 
 module.exports = {
   httpPort: 80,

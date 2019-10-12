@@ -1,1 +1,5 @@
 node_modules/
+
+/fs/.data/users/
+/fs/.data/tokens/
+/fs/.data/checks/

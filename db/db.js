@@ -1,5 +1,5 @@
 const { Pool } = require('pg');
-const { user, host, port, password } = require('../server/config').pSqlConfig;
+const { user, host, port, password } = require('../config').pSqlConfig;
 
 const pool = new Pool({
   user,
