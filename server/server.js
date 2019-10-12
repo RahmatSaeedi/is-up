@@ -4,9 +4,9 @@ const url = require('url');
 const fs = require('fs');
 const StringDecoder = require('string_decoder').StringDecoder;
 
-const config = require('../config');
+const config = require('../config').server;
 const router = require('./router');
-const helpers = require('../lib/helpers');
+const _parseJsonToObject = require('../lib/helpers').parseJsonToObject;
 const path = require('path');
 
 
@@ -21,7 +21,7 @@ server.httpsServer = https.createServer(server.httpsServerOptions, (req, res) =>
 
 
 
-server.init = () => {
+server.init = function () {
   server.httpServer.listen(config.httpPort, ()=> {
     console.log(`HTTP server is listening on port ${config.httpPort}.`);
   });
@@ -56,7 +56,7 @@ server.unifiedServer = (req, res) => {
       query: parsedUrl.query,
       method : req.method.toLowerCase(),
       headers: req.headers,
-      payload: helpers.parseJsonToObject(payload)
+      payload: _parseJsonToObject(payload)
     };
     // choose the handler
     const chosenHandler = typeof(router[path]) !== 'undefined' ? router[path] : router.notFound;

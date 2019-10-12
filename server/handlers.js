@@ -3,62 +3,11 @@
 ****************************************************************/
 const _db0 = require('../db/index');
 const _db = require('../fs/data');
-const helpers = require('../lib/helpers');
-
+const config = require('../config').handlers;
+const _is = require('../lib/helpers').is;
+const {_hash, _createRandomString} = require('../lib/helpers');
 
 const handlers = {};
-/****************************************************************
-  Configurations
-****************************************************************/
-const config = {
-  minPasswordLength: 10,
-  tokenIDLength: 32,
-  checkIdLength: 32,
-  maxChecksLimit: 10
-};
-
-/****************************************************************
-  Validation helpers
-****************************************************************/
-const _is = {};
-
-_is.email = (email = '') => {
-  const emailRegExp = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-  return typeof(email) === 'string' && email.trim().length > 0 && emailRegExp.test(email.trim().toLowerCase()) ? email.trim().toLowerCase() : false;
-};
-
-_is.str = (str = '', minLength = 1, exactLength = false) => {
-  if (exactLength) {
-    str = str.trim().length === minLength ? str.trim() : false;
-  }
-  return typeof(str) === 'string' && str.trim().length >= minLength ? str.trim() : false;
-};
-
-_is.token = (token = '') => {
-  return typeof(token) === 'string' && token.trim().length === config.tokenIDLength ? token.trim() : false;
-};
-
-_is.checkId = (id = '') => {
-  return typeof(id) === 'string' && id.trim().length === config.checkIdLength ? id.trim() : false;
-};
-
-_is.protocol = (prot  = '') => {
-  const validProtocol = ['http', 'https'];
-  return typeof(prot) === 'string' && validProtocol.indexOf(prot.trim()) > -1 ? prot.trim() : false;
-};
-
-_is.method = (method  = '') => {
-  const validMethod = ['post', 'get', 'put', 'delete'];
-  return typeof(method) === 'string' && validMethod.indexOf(method.trim()) > -1 ? method.trim() : false;
-};
-
-_is.successCodes = (successCodes  = []) => {
-  return typeof(successCodes) === 'object' && successCodes instanceof Array && successCodes.length > 0 ? successCodes : false;
-};
-
-_is.timeoutSeconds = (timeoutSeconds) => {
-  return typeof(timeoutSeconds) === 'number' && timeoutSeconds % 1 === 0 && timeoutSeconds > 0 && timeoutSeconds <= 5 ? timeoutSeconds : false;
-};
 
 /****************************************************************
   users Handler
@@ -88,7 +37,7 @@ handlers._users.post = (data, cb) => {
     _db.read('users', email, (err, data) => {
       if (err || !data.length) {
         // Hash the password
-        const hashedPassword = helpers.hash(password);
+        const hashedPassword = _hash(password);
         if (hashedPassword) {
           const userObject = {
             firstName,
@@ -166,7 +115,7 @@ handlers._users.put = (data, cb) => {
               userData.lastName = lastName;
             }
             if (password) {
-              userData.password = helpers.hash(password);
+              userData.password = _hash(password);
             }
             _db.update('users', email, userData, (err) => {
               if (!err) {
@@ -248,9 +197,9 @@ handlers._tokens.post = (data, cb) => {
     _db.read('users', email, (err, userData) => {
       if (!err && userData) {
         // Hash the password
-        const hashedPassword = helpers.hash(password);
+        const hashedPassword = _hash(password);
         if (hashedPassword === userData.password) {
-          const tokenId = helpers.createRandomString(config.tokenIDLength);
+          const tokenId = _createRandomString(config.tokenIDLength);
           const expires = Date.now() + 1000 * 60 * 60; //+1 hour
           
           const tokenObject = {
@@ -415,7 +364,7 @@ handlers._checks.post = (data, cb) => {
             const userChecks = typeof(userData.checks) === 'object' && userData.checks instanceof Array ? userData.checks : [];
             if (userChecks.length < config.maxChecksLimit) {
 
-              const checkId = helpers.createRandomString(config.checkIdLength);
+              const checkId = _createRandomString(config.checkIdLength);
               const checkObject = {
                 id: checkId,
                 email: userData.email,

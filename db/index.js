@@ -111,8 +111,8 @@ queries.tokens = {
 
 queries.checks = {
   create : {
-    columns: 'id, email, protocol, url, method, success_codes, timeout_seconds',
-    values: '$1, $2, $3, $4, $5, $6, $7',
+    columns: 'id, email, protocol, url, method, success_codes, timeout_seconds, state, last_checked',
+    values: '$1, $2, $3, $4, $5, $6, $7, $8, $9',
     data: (o) => {
       return [
         String(o.id),
@@ -121,7 +121,9 @@ queries.checks = {
         String(o.url),
         String(o.method),
         String(o.successCodes),
-        String(o.timeoutSeconds)
+        String(o.timeoutSeconds),
+        String(o.state),
+        String(o.lastChecked)
       ];
     }
   },
@@ -138,13 +140,15 @@ queries.checks = {
         url: resRow.url,
         method: resRow.method,
         successCodes: resRow.success_codes,
-        timeoutSeconds: resRow.timeout_seconds
+        timeoutSeconds: resRow.timeout_seconds,
+        state: resRow.state,
+        lastChecked: resRow.last_checked
       };
     }
   },
   update: {
-    columns : 'email = $1, protocol = $2, url = $3, method = $4, success_codes = $5, timeout_seconds = $6',
-    condition : 'id = $7',
+    columns : 'email = $1, protocol = $2, url = $3, method = $4, success_codes = $5, timeout_seconds = $6, state = $7, last_checked = $8',
+    condition : 'id = $9',
     data : (o) => {
       return [
         String(o.email),
@@ -153,6 +157,8 @@ queries.checks = {
         String(o.method),
         String(o.successCodes),
         String(o.timeoutSeconds),
+        String(o.state),
+        String(o.lastChecked),
         String(o.id)
       ];
     }
