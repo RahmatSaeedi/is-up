@@ -155,10 +155,17 @@ lib.update = function(dir, fileName, dataObject, cb) {
 /********************************
   Delete a file
 ********************************/
-lib.delete = function(dir, fileName, cb) {
+lib.delete = function(dir, fileName, cb, cascadeDelete = true) {
   dir = typeof(dir) === 'string' ? dir : false;
   fileName = typeof(fileName) === 'string' ? fileName : false;
   cb = typeof(cb) === 'function' ? cb : false;
+
+
+  //Cascade delete based on the rules provided in 'cascade' object
+  if (cascadeDelete && cascade[dir]) {
+    cascade[dir].filesToDelete(fileName);
+  }
+
 
   if (dir && fileName && cb) {
     fs.unlink(lib.baseDir + dir + '/' + fileName + '.json', (err) => {
@@ -172,6 +179,35 @@ lib.delete = function(dir, fileName, cb) {
     cb("Expected strings for 'dir'/'fileName', and function for 'cb'.");
   }
 };
+
+/********************************
+  Cascade Delete
+********************************/
+const cascade = {};
+cascade.users = {
+  filesToDelete: (fileName) => {
+    fileName = typeof(fileName) === 'string' ? fileName : false;
+
+    if (fileName) {
+      lib.read('users', fileName, (err, userData) => {
+        let deletionErrors = 0;
+        if (!err && userData && userData.checks) {
+          userData.checks.forEach((checkId) => {
+            lib.delete('checks', checkId, (err) => {
+              if (err) {
+                deletionErrors++;
+              }
+            });
+          });
+        }
+        return deletionErrors;
+      });
+    } else {
+      return 1;
+    }
+  }
+};
+
 
 
 module.exports = lib;

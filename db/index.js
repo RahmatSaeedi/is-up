@@ -1,6 +1,6 @@
 const  query  = require('./db');
 const lib = {};
-const permittedTables = ['users', 'tokens'];
+const permittedTables = ['users', 'tokens', 'checks'];
 
 /********************************
   queries list
@@ -10,13 +10,13 @@ queries.users = {
   create : {
     columns: 'first_name, last_name, email, password, tos_agreement, date_created',
     values: '$1, $2, $3, $4, $5, NOW()',
-    data: (dataObject) => {
+    data: (o) => {
       return [
-        String(dataObject.firstName),
-        String(dataObject.lastName),
-        String(dataObject.email),
-        String(dataObject.password),
-        String(dataObject.tosAgreement)
+        String(o.firstName),
+        String(o.lastName),
+        String(o.email),
+        String(o.password),
+        String(o.tosAgreement)
       ];
     }
   },
@@ -26,25 +26,33 @@ queries.users = {
       return [email];
     },
     format: (resRow) => {
+      let checks;
+      if (resRow.checks.length === 0) {
+        checks = [];
+      } else {
+        checks = resRow.checks.split(',');
+      }
       return {
         firstName   : resRow.first_name,
         lastName    : resRow.last_name,
         email       : resRow.email,
         password    : resRow.password,
         tosAgreement: resRow.tos_agreement,
-        dateCreated : resRow.date_created
+        dateCreated : resRow.date_created,
+        checks
       };
     }
   },
   update: {
-    columns : 'first_name = $1, last_name = $2, password = $3',
-    condition : 'email = $4',
-    data : (dataObject) => {
+    columns : 'first_name = $1, last_name = $2, password = $3, checks = $4',
+    condition : 'email = $5',
+    data : (o) => {
       return [
-        String(dataObject.firstName),
-        String(dataObject.lastName),
-        String(dataObject.password),
-        String(dataObject.email)
+        String(o.firstName),
+        String(o.lastName),
+        String(o.password),
+        String(o.checks),
+        String(o.email)
       ];
     }
   },
@@ -60,11 +68,11 @@ queries.tokens = {
   create : {
     columns: 'email, id, expires',
     values: '$1, $2, to_timestamp($3)',
-    data: (dataObject) => {
+    data: (o) => {
       return [
-        String(dataObject.email),
-        String(dataObject.id),
-        String(dataObject.expires / 1000)
+        String(o.email),
+        String(o.id),
+        String(o.expires / 1000)
       ];
     }
   },
@@ -77,19 +85,19 @@ queries.tokens = {
       return {
         email   : resRow.email,
         id      : resRow.id,
-        expires : resRow.expires * 1000
+        expires : resRow.expires // pg already *1000 and converts it to js date format
       };
     }
   },
   update: {
     columns : 'email = $1, id = $2, expires = to_timestamp($3)',
     condition : 'id = $4',
-    data : (dataObject) => {
+    data : (o) => {
       return [
-        String(dataObject.email),
-        String(dataObject.id),
-        String(dataObject.expires / 1000),
-        String(dataObject.id)
+        String(o.email),
+        String(o.id),
+        String(o.expires / 1000),
+        String(o.id)
       ];
     }
   },
@@ -101,8 +109,63 @@ queries.tokens = {
   }
 };
 
+queries.checks = {
+  create : {
+    columns: 'id, email, protocol, url, method, success_codes, timeout_seconds',
+    values: '$1, $2, $3, $4, $5, $6, $7',
+    data: (o) => {
+      return [
+        String(o.id),
+        String(o.email),
+        String(o.protocol),
+        String(o.url),
+        String(o.method),
+        String(o.successCodes),
+        String(o.timeoutSeconds)
+      ];
+    }
+  },
+  read : {
+    condition : 'id = $1',
+    data: (id) => {
+      return [id];
+    },
+    format: (resRow) => {
+      return {
+        id: resRow.id,
+        email: resRow.email,
+        protocol: resRow.protocol,
+        url: resRow.url,
+        method: resRow.method,
+        successCodes: resRow.success_codes,
+        timeoutSeconds: resRow.timeout_seconds
+      };
+    }
+  },
+  update: {
+    columns : 'email = $1, protocol = $2, url = $3, method = $4, success_codes = $5, timeout_seconds = $6',
+    condition : 'id = $7',
+    data : (o) => {
+      return [
+        String(o.email),
+        String(o.protocol),
+        String(o.url),
+        String(o.method),
+        String(o.successCodes),
+        String(o.timeoutSeconds),
+        String(o.id)
+      ];
+    }
+  },
+  delete : {
+    condition : 'id = $1',
+    data : (id) => {
+      return [id];
+    }
+  }
+};
 /********************************
-  Create a new
+  Insert a row
 ********************************/
 lib.create = function(tableName, uID, dataObject, cb) {
   tableName = typeof(tableName) === 'string'  && permittedTables.indexOf(tableName) > -1 ?  permittedTables[permittedTables.indexOf(tableName)] : false;

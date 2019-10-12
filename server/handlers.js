@@ -1,4 +1,6 @@
-// callback a status code, & a payload object
+/****************************************************************
+  Handlers callback a status code & possibly a payload object
+****************************************************************/
 const _db0 = require('../db/index');
 const _db = require('../fs/data');
 const helpers = require('../lib/helpers');
@@ -10,7 +12,9 @@ const handlers = {};
 ****************************************************************/
 const config = {
   minPasswordLength: 10,
-  tokenIDLength: 32
+  tokenIDLength: 32,
+  checkIdLength: 32,
+  maxChecksLimit: 10
 };
 
 /****************************************************************
@@ -30,8 +34,30 @@ _is.str = (str = '', minLength = 1, exactLength = false) => {
   return typeof(str) === 'string' && str.trim().length >= minLength ? str.trim() : false;
 };
 
-_is.token = (str = '') => {
-  return typeof(str) === 'string' && str.trim().length === config.tokenIDLength ? str.trim() : false;
+_is.token = (token = '') => {
+  return typeof(token) === 'string' && token.trim().length === config.tokenIDLength ? token.trim() : false;
+};
+
+_is.checkId = (id = '') => {
+  return typeof(id) === 'string' && id.trim().length === config.checkIdLength ? id.trim() : false;
+};
+
+_is.protocol = (prot  = '') => {
+  const validProtocol = ['http', 'https'];
+  return typeof(prot) === 'string' && validProtocol.indexOf(prot.trim()) > -1 ? prot.trim() : false;
+};
+
+_is.method = (method  = '') => {
+  const validMethod = ['post', 'get', 'put', 'delete'];
+  return typeof(method) === 'string' && validMethod.indexOf(method.trim()) > -1 ? method.trim() : false;
+};
+
+_is.successCodes = (successCodes  = []) => {
+  return typeof(successCodes) === 'object' && successCodes instanceof Array && successCodes.length > 0 ? successCodes : false;
+};
+
+_is.timeoutSeconds = (timeoutSeconds) => {
+  return typeof(timeoutSeconds) === 'number' && timeoutSeconds % 1 === 0 && timeoutSeconds > 0 && timeoutSeconds <= 5 ? timeoutSeconds : false;
 };
 
 /****************************************************************
@@ -92,7 +118,7 @@ handlers._users.post = (data, cb) => {
 };
 
 // Users - get
-// Required data: email
+// Required data: email, token
 // Optional data: none
 handlers._users.get = (data, cb) => {
   const email = _is.email(data.query.email);
@@ -119,9 +145,8 @@ handlers._users.get = (data, cb) => {
 };
 
 // Users - put
-// Required data: email, at least one optional data
+// Required data: email, at least one optional data, token
 // Optional data: firstName, lastName, password
-// @TODO authentication
 handlers._users.put = (data, cb) => {
   const email = _is.email(data.payload.email);
   const firstName = _is.str(data.payload.firstName);
@@ -166,7 +191,7 @@ handlers._users.put = (data, cb) => {
 };
 
 // Users - delete
-// Required data: email
+// Required data: email, token
 // Optional data: none
 // @TODO delete any other data associated with the user
 handlers._users.delete = (data, cb) => {
@@ -256,7 +281,6 @@ handlers._tokens.post = (data, cb) => {
 // Tokens - get
 // Required data: id
 // Optional data: none
-// @TODO authentication
 handlers._tokens.get = (data, cb) => {
   const id = _is.token(data.query.id);
 
@@ -277,7 +301,6 @@ handlers._tokens.get = (data, cb) => {
 // Tokens - put
 // Required data: id, extend
 // Optional data: none
-// @TODO authentication
 handlers._tokens.put = (data, cb) => {
   const id = _is.token(data.payload.id);
   const extend = typeof(data.payload.extend) === 'boolean' && data.payload.extend === true ? true : false;
@@ -312,7 +335,6 @@ handlers._tokens.put = (data, cb) => {
 // Tokens - delete
 // Required data: id
 // Optional data: none
-// @TODO authentication
 handlers._tokens.delete = (data, cb) => {
   const id = _is.token(data.query.id);
 
@@ -338,12 +360,12 @@ handlers._tokens.delete = (data, cb) => {
 // Tokens - session validation
 // Required data: id, email, cb
 // Optional data: none
-handlers._tokens.verifyToken = (id, email, cb) => {
-  id = _is.token(id);
+handlers._tokens.verifyToken = (token, email, cb) => {
+  token = _is.token(token);
   email = _is.email(email);
 
-  if (id && email) {
-    _db.read('tokens', id, (err, tokenData) => {
+  if (token && email) {
+    _db.read('tokens', token, (err, tokenData) => {
       if (!err && tokenData) {
         if (tokenData.expires > Date.now() && tokenData.email === email) {
           cb(true);
@@ -354,18 +376,227 @@ handlers._tokens.verifyToken = (id, email, cb) => {
         cb(false);
       }
     });
+  } else {
+    cb(false);
   }
 };
 
 /****************************************************************
-    PING Handler
+  Checks services
+****************************************************************/
+handlers.checks = (data, cb) => {
+  const methods = ['post', 'get', 'put', 'delete'];
+  if (methods.indexOf(data.method) > -1) {
+    handlers._checks[data.method](data, cb);
+  } else {
+    cb(405);
+  }
+};
+handlers._checks = {};
+
+// Checks - post
+// Required data: protocol, url, method, successCodes, timeoutSeconds, token
+// Optional data: none
+handlers._checks.post = (data, cb) => {
+  const protocol = _is.protocol(data.payload.protocol);
+  const url = _is.str(data.payload.url);
+  const method = _is.method(data.payload.method);
+  const successCodes = _is.successCodes(data.payload.successCodes);
+  const timeoutSeconds = _is.timeoutSeconds(data.payload.timeoutSeconds);
+  const token = _is.token(data.headers.token);
+
+  if (protocol && url && method && successCodes && timeoutSeconds && token) {
+    _db.read('tokens', token, (err, tokenData) => {
+      if (!err && tokenData) {
+        const email = tokenData.email;
+        _db.read('users', email, (err, userData) => {
+          if (!err && userData) {
+            // get user checks & ensure max has not exceeded
+            const userChecks = typeof(userData.checks) === 'object' && userData.checks instanceof Array ? userData.checks : [];
+            if (userChecks.length < config.maxChecksLimit) {
+
+              const checkId = helpers.createRandomString(config.checkIdLength);
+              const checkObject = {
+                id: checkId,
+                email: userData.email,
+                protocol,
+                url,
+                method,
+                successCodes,
+                timeoutSeconds
+              };
+              _db.create('checks', checkId, checkObject, (err) => {
+                if (!err) {
+                  userChecks.push(checkId);
+                  userData.checks = userChecks;
+                  _db.update('users', userData.email, userData, (err) => {
+                    if (!err) {
+                      cb(200, checkObject);
+                    } else {
+                      cb(500, {"Error":"Could not update the user with the new check."});
+                    }
+                  });
+                } else {
+                  cb(500, {"Error":"Could not create the new check."});
+                }
+              });
+
+            } else {
+              cb(400, {"Error":`The user already has the maximum number of checks (${config.maxChecksLimit}).`});
+            }
+          } else {
+            cb(500, {"Error":"User was not found."});
+          }
+        });
+      } else {
+        cb(500, {"Error" : "Session was not found."});
+      }
+    });
+  } else {
+    cb(400, {"Error" : "Missing or invalid inputs."});
+  }
+};
+
+// Checks - get
+// Required data: checkId, token
+// Optional data: none
+handlers._checks.get = (data, cb) => {
+  const id = _is.checkId(data.query.id);
+
+  if (id) {
+    _db.read('checks', id, (err, checkData) => {
+      if (!err && checkData) {
+        const token = _is.token(data.headers.token);
+        handlers._tokens.verifyToken(token, checkData.email, (tokenIsValid) => {
+          if (tokenIsValid) {
+            cb(200, checkData);
+          } else {
+            cb(403, {"Error" : "Unauthorized."});
+          }
+        });
+      } else {
+        cb(400, {"Error" : "Could not find the check."});
+      }
+    });
+  } else {
+    cb(400, {"Error" : "Invalid checkId."});
+  }
+};
+
+// Checks - put
+// Required data: checkId, an optional parameter, token
+// Optional data: protocol, url, method, successCodes, timeoutSeconds
+handlers._checks.put = (data, cb) => {
+  const checkId = _is.checkId(data.payload.id);
+  const protocol = _is.protocol(data.payload.protocol);
+  const url = _is.str(data.payload.url);
+  const method = _is.method(data.payload.method);
+  const successCodes = _is.successCodes(data.payload.successCodes);
+  const timeoutSeconds = _is.timeoutSeconds(data.payload.timeoutSeconds);
+  const token = _is.token(data.headers.token);
+
+  if (checkId) {
+    if (protocol || url || method || successCodes || timeoutSeconds) {
+      _db.read('checks', checkId, (err, checkData) => {
+        if (!err && checkData) {
+          handlers._tokens.verifyToken(token, checkData.email, (tokenIsValid) => {
+            if (tokenIsValid) {
+              if (protocol) {
+                checkData.protocol = protocol;
+              }
+              if (url) {
+                checkData.url = url;
+              }
+              if (method) {
+                checkData.method = method;
+              }
+              if (successCodes) {
+                checkData.successCodes = successCodes;
+              }
+              if (timeoutSeconds) {
+                checkData.timeoutSeconds = timeoutSeconds;
+              }
+              _db.update('checks', checkId, checkData, (err) => {
+                if (!err) {
+                  cb(200, checkData);
+                } else {
+                  cb(500, {"Error" : "Could not update the check."});
+                }
+              });
+            } else {
+              cb(403, {"Error" : "Unauthorized."});
+            }
+          });
+        } else {
+          cb(400, {"Error" : "Could not find the check."});
+        }
+      });
+    } else {
+      cb(400, {"Error" : "Missing fields to update."});
+    }
+  } else {
+    cb(400, {"Error" : "Invalid checkId."});
+  }
+};
+
+// Checks - delete
+// Required data: id
+// Optional data: none
+handlers._checks.delete = (data, cb) => {
+  const checkId = _is.checkId(data.query.id);
+
+  if (checkId) {
+    _db.read('checks', checkId, (err, checkData) => {
+      if (!err && checkData) {
+        const token = _is.token(data.headers.token);
+        handlers._tokens.verifyToken(token, checkData.email, (tokenIsValid) => {
+          if (tokenIsValid) {
+            _db.delete('checks', checkId, (err) => {
+              if (!err) {
+                _db.read('users', checkData.email, (err, userData) => {
+                  if (!err && userData) {
+                    const checkPosition = userData.checks.indexOf(checkId);
+                    if (checkPosition > -1) {
+                      userData.checks.splice(checkPosition, 1);
+                      _db.update('users', checkData.email, userData, (err) => {
+                        if (!err) {
+                          cb(200);
+                        } else {
+                          cb(500, {"Error" : "Could not update the user's object."});
+                        }
+                      });
+                    } else {
+                      cb(500, {"Error" : "Could not find the check in user's object."});
+                    }
+                  } else {
+                    cb(500, {"Error" : "Could not clear the user's check."});
+                  }
+                });
+              } else {
+                cb(500, {"Error" : "Could not delete the check."});
+              }
+            });
+          } else {
+            cb(403);
+          }
+        });
+      } else {
+        cb(400, {"Error" : "Could not find the specified check."});
+      }
+    });
+  } else {
+    cb(400, {"Error" : "Missing or invalid fields."});
+  }
+};
+/****************************************************************
+  PING Handler
 ****************************************************************/
 handlers.ping = (data, cb) => {
   cb(200);
 };
 
 /****************************************************************
-    Not Found Handler
+  Not Found Handler
 ****************************************************************/
 handlers.notFound = (data, cb) => {
   cb(404);

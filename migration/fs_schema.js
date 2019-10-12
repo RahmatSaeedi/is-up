@@ -7,4 +7,7 @@ mkDir('', () => {
   mkDir('tokens/', () => {
 
   });
+  mkDir('checks/', () => {
+
+  });
 });
