@@ -17,8 +17,11 @@ workers.processCheckOutcome = (checkData, checkOutcome) => {
   const state = !checkOutcome.error && checkOutcome.responseCode && checkData.successCodes.indexOf(checkOutcome.responseCode) > -1 ? 'up' : 'down';
   
   // updates the check date
+  checkOutcome.timeOfCheck = Date.now();
+  workers.log(checkData, checkOutcome, state);
+
   checkData.state = state;
-  checkData.lastChecked = Date.now();
+  checkData.lastChecked = checkOutcome.timeOfCheck;
   _db.update('checks', checkData.id, checkData, (err) => {
     if (err) {
       console.log(`Workers: Could not update the check with ID=${checkData.id}.`);
@@ -29,8 +32,7 @@ workers.processCheckOutcome = (checkData, checkOutcome) => {
 workers.performCheck = (checkData) => {
   const checkOutcome = {
     'error' : false,
-    'responseCode' : false,
-    'outcomeSent': false
+    'responseCode' : false
   };
   
   const parsedUrl = url.parse(checkData.protocol + '://' + checkData.url, true);
@@ -58,10 +60,12 @@ workers.performCheck = (checkData) => {
   }
 
   if (_module) {
+    let outcomeSent = false;
+
     const req = _module.request(requestDetail, (res) => {
       checkOutcome.responseCode = res.statusCode;
-      if (!checkOutcome.outcomeSent) {
-        checkOutcome.outcomeSent = true;
+      if (!outcomeSent) {
+        outcomeSent = true;
         workers.processCheckOutcome(checkData, checkOutcome);
       }
     });
@@ -71,8 +75,8 @@ workers.performCheck = (checkData) => {
         error: true,
         value: err
       };
-      if (!checkOutcome.outcomeSent) {
-        checkOutcome.outcomeSent = true;
+      if (!outcomeSent) {
+        outcomeSent = true;
         workers.processCheckOutcome(checkData, checkOutcome);
       }
     });
@@ -82,8 +86,8 @@ workers.performCheck = (checkData) => {
         error: true,
         value: 'timeout'
       };
-      if (!checkOutcome.outcomeSent) {
-        checkOutcome.outcomeSent = true;
+      if (!outcomeSent) {
+        outcomeSent = true;
         workers.processCheckOutcome(checkData, checkOutcome);
       }
     });
