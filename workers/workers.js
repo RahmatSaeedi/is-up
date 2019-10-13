@@ -13,15 +13,25 @@ const workers = {};
 /********************************
   Workers
 ********************************/
+workers.log = (checkData, checkOutcome, state, timeOfCheck) => {
+  const logData = {
+    'check' : checkData,
+    'outcome' : checkOutcome,
+    'state' : state,
+    'time' : timeOfCheck
+  };
+
+};
+
 workers.processCheckOutcome = (checkData, checkOutcome) => {
   const state = !checkOutcome.error && checkOutcome.responseCode && checkData.successCodes.indexOf(checkOutcome.responseCode) > -1 ? 'up' : 'down';
   
   // updates the check date
-  checkOutcome.timeOfCheck = Date.now();
-  workers.log(checkData, checkOutcome, state);
+  timeOfCheck = Date.now();
+  workers.log(checkData, checkOutcome, state, timeOfCheck);
 
   checkData.state = state;
-  checkData.lastChecked = checkOutcome.timeOfCheck;
+  checkData.lastChecked = timeOfCheck;
   _db.update('checks', checkData.id, checkData, (err) => {
     if (err) {
       console.log(`Workers: Could not update the check with ID=${checkData.id}.`);
