@@ -218,9 +218,20 @@ lib.list = (dir = '', cb = (err, data)=>{}) => {
   if (dir && cb) {
     fs.readdir(lib.baseDir + dir + '/', (err, data) => {
       if (!err && data) {
+        const row = {};
+        let uID;
+        switch (dir) {
+          case 'users' :
+            uID = 'email';
+            break;
+          default:
+            uID = 'id';;
+            break;
+        }
         const trimmedFileNames = [];
         data.forEach((fileName) => {
-          trimmedFileNames.push(fileName.replace('.json',''));
+          row[uID] = fileName.replace('.json','');
+          trimmedFileNames.push(row);
         });
         cb(false, trimmedFileNames);
       } else {

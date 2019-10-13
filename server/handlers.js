@@ -1,11 +1,12 @@
 /****************************************************************
   Handlers callback a status code & possibly a payload object
 ****************************************************************/
-const _db0 = require('../db/index');
-const _db = require('../fs/data');
+const _db = require('../db/index');
+const _db0 = require('../fs/data');
 const config = require('../config').handlers;
 const _is = require('../lib/helpers').is;
-const {_hash, _createRandomString} = require('../lib/helpers');
+const _hash = require('../lib/helpers').hash;
+const _createRandomString = require('../lib/helpers').createRandomString;
 
 const handlers = {};
 

@@ -17,5 +17,8 @@ module.exports = {
     tokenIDLength: 32,
     checkIdLength: 32,
     maxChecksLimit: 10
+  },
+  workers : {
+    checkFrequencyInSeconds: 5
   }
 };

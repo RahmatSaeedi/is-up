@@ -3,17 +3,27 @@ const url = require('url');
 const path = require('path');
 const http = require('http');
 const https = require('https');
-const helpers = require('./lib/helpers');
-const _db0 = require('../db/index');
-const _db = require('../fs/data');
-const _is = require('./lib/helpers').is;
+const _db = require('../db/index');
+const _db0 = require('../fs/data');
+const _is = require('../lib/helpers').is;
+const config = require('../config').workers;
 const workers = {};
 
 
+/********************************
+  Workers
+********************************/
 workers.processCheckOutcome = (checkData, checkOutcome) => {
-  const state = !checkOutcome.error && checkOutcome.responseCode && checkData.statusCode.indexOf(checkOutcome.responseCode) > -1 ? 'up' : 'down';
+  const state = !checkOutcome.error && checkOutcome.responseCode && checkData.successCodes.indexOf(checkOutcome.responseCode) > -1 ? 'up' : 'down';
   
-
+  // updates the check date
+  checkData.state = state;
+  checkData.lastChecked = Date.now();
+  _db.update('checks', checkData.id, checkData, (err) => {
+    if (err) {
+      console.log(`Workers: Could not update the check with ID=${checkData.id}.`);
+    }
+  });
 };
 
 workers.performCheck = (checkData) => {
@@ -34,25 +44,25 @@ workers.performCheck = (checkData) => {
 
   let _module;
   switch (checkData.protocol) {
-    case 'http':
-      _module = http;
-      break;
+  case 'http':
+    _module = http;
+    break;
 
-    case 'https':
-      _module = https;
-      break;
+  case 'https':
+    _module = https;
+    break;
     
-    default:
-      _module = false;
-      break;
+  default:
+    _module = false;
+    break;
   }
 
-  if(_module) {
+  if (_module) {
     const req = _module.request(requestDetail, (res) => {
       checkOutcome.responseCode = res.statusCode;
-      if(!checkOutcome.outcomeSent) {
-        workers.processCheckOutcome(checkData, checkOutcome);
+      if (!checkOutcome.outcomeSent) {
         checkOutcome.outcomeSent = true;
+        workers.processCheckOutcome(checkData, checkOutcome);
       }
     });
 
@@ -61,9 +71,9 @@ workers.performCheck = (checkData) => {
         error: true,
         value: err
       };
-      if(!checkOutcome.outcomeSent) {
-        workers.processCheckOutcome(checkData, checkOutcome);
+      if (!checkOutcome.outcomeSent) {
         checkOutcome.outcomeSent = true;
+        workers.processCheckOutcome(checkData, checkOutcome);
       }
     });
 
@@ -72,9 +82,9 @@ workers.performCheck = (checkData) => {
         error: true,
         value: 'timeout'
       };
-      if(!checkOutcome.outcomeSent) {
-        workers.processCheckOutcome(checkData, checkOutcome);
+      if (!checkOutcome.outcomeSent) {
         checkOutcome.outcomeSent = true;
+        workers.processCheckOutcome(checkData, checkOutcome);
       }
     });
 
@@ -82,7 +92,7 @@ workers.performCheck = (checkData) => {
   } else {
     console.log(`Workers: Could not find the module to perform the '${checkData.protocol}' request.`);
   }
-}
+};
 
 workers.validateCheckData = (checkData) => {
   checkData = typeof(checkData) && checkData !== null ? checkData : {};
@@ -99,19 +109,19 @@ workers.validateCheckData = (checkData) => {
 
   if (checkData.id && checkData.email && checkData.protocol &&
     checkData.method && checkData.url && checkData.successCodes &&
-    checkData.timeoutSeconds ) {
-      workers.performCheck(checkData);
+    checkData.timeoutSeconds) {
+    workers.performCheck(checkData);
   } else {
     console.log('Workers: One of the checks is invalid.');
   }
-}
+};
 
 workers.gatherAllChecks = () => {
   _db.list('checks', (err, checkIDs) => {
-    if (!err && checkIDs && checkIDs.length > 0 ){
+    if (!err && checkIDs && checkIDs.length > 0) {
       checkIDs.forEach((check) => {
-        _db.read('checks', check, (err, checkData) => {
-          if(!err && checkData) {
+        _db.read('checks', check.id, (err, checkData) => {
+          if (!err && checkData) {
             workers.validateCheckData(checkData);
           } else {
             console.log(`Workers: ${check} check could not be read.`);
@@ -122,20 +132,18 @@ workers.gatherAllChecks = () => {
       console.log("Workers: No checks to process");
     }
   });
-}
+};
 
 workers.loop = () => {
-  setImmediate(() => {
-    workers.gatherAllChecks()
-  }, 1000 * 60);
-}
+  setInterval(() => {
+    workers.gatherAllChecks();
+  }, 1000 * config.checkFrequencyInSeconds);
+};
 
-workers.init =function () {
+workers.init = function() {
   workers.gatherAllChecks();
 
   workers.loop();
-}
-
-
+};
 
 module.exports = workers;

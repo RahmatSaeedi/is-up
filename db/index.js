@@ -112,7 +112,7 @@ queries.tokens = {
 queries.checks = {
   create : {
     columns: 'id, email, protocol, url, method, success_codes, timeout_seconds, state, last_checked',
-    values: '$1, $2, $3, $4, $5, $6, $7, $8, $9',
+    values: '$1, $2, $3, $4, $5, $6, $7, $8, to_timestamp($9)',
     data: (o) => {
       return [
         String(o.id),
@@ -122,8 +122,8 @@ queries.checks = {
         String(o.method),
         String(o.successCodes),
         String(o.timeoutSeconds),
-        String(o.state),
-        String(o.lastChecked)
+        String(o.state ? o.state : 'down'),
+        o.lastChecked ? o.lastChecked : Date.now() / 1000
       ];
     }
   },
@@ -139,7 +139,7 @@ queries.checks = {
         protocol: resRow.protocol,
         url: resRow.url,
         method: resRow.method,
-        successCodes: resRow.success_codes,
+        successCodes: resRow.success_codes.split(',').map(Number),
         timeoutSeconds: resRow.timeout_seconds,
         state: resRow.state,
         lastChecked: resRow.last_checked
@@ -147,7 +147,7 @@ queries.checks = {
     }
   },
   update: {
-    columns : 'email = $1, protocol = $2, url = $3, method = $4, success_codes = $5, timeout_seconds = $6, state = $7, last_checked = $8',
+    columns : 'email = $1, protocol = $2, url = $3, method = $4, success_codes = $5, timeout_seconds = $6, state = $7, last_checked = to_timestamp($8)',
     condition : 'id = $9',
     data : (o) => {
       return [
@@ -272,7 +272,6 @@ lib.list = function(tableName, cb) {
 
     query(`SELECT ${uID} FROM ${tableName}`, null, (qErr, qRes) => {
       if (!qErr && qRes.rows) {
-        console.log(qRes.rows);
         cb(false, qRes.rows);
       } else {
         cb("Could not retrive the data from db.");

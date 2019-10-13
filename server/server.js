@@ -21,7 +21,7 @@ server.httpsServer = https.createServer(server.httpsServerOptions, (req, res) =>
 
 
 
-server.init = function () {
+server.init = function() {
   server.httpServer.listen(config.httpPort, ()=> {
     console.log(`HTTP server is listening on port ${config.httpPort}.`);
   });
