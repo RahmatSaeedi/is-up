@@ -221,12 +221,12 @@ lib.list = (dir = '', cb = (err, data)=>{}) => {
         const row = {};
         let uID;
         switch (dir) {
-          case 'users' :
-            uID = 'email';
-            break;
-          default:
-            uID = 'id';;
-            break;
+        case 'users' :
+          uID = 'email';
+          break;
+        default:
+          uID = 'id';
+          break;
         }
         const trimmedFileNames = [];
         data.forEach((fileName) => {

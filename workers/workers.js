@@ -27,7 +27,7 @@ workers.processCheckOutcome = (checkData, checkOutcome) => {
   const state = !checkOutcome.error && checkOutcome.responseCode && checkData.successCodes.indexOf(checkOutcome.responseCode) > -1 ? 'up' : 'down';
   
   // updates the check date
-  timeOfCheck = Date.now();
+  const timeOfCheck = Date.now();
   workers.log(checkData, checkOutcome, state, timeOfCheck);
 
   checkData.state = state;

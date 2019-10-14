@@ -7,14 +7,14 @@ const StringDecoder = require('string_decoder').StringDecoder;
 const config = require('../config').server;
 const router = require('./router');
 const _parseJsonToObject = require('../lib/helpers').parseJsonToObject;
-const path = require('path');
+const join = require('path').join;
 
 
 // Server initiation & setup
 const server = {};
 server.httpsServerOptions = {
-  'key': fs.readFileSync(path.join(__dirname, '/https/key.pem')),
-  'cert': fs.readFileSync(path.join(__dirname, '/https/cert.pem'))
+  'key': fs.readFileSync(join(__dirname, '/https/key.pem')),
+  'cert': fs.readFileSync(join(__dirname, '/https/cert.pem'))
 };
 server.httpServer = http.createServer((req, res) => server.unifiedServer(req, res));
 server.httpsServer = https.createServer(server.httpsServerOptions, (req, res) => server.unifiedServer(req, res));
@@ -59,17 +59,58 @@ server.unifiedServer = (req, res) => {
       payload: _parseJsonToObject(payload)
     };
     // choose the handler
-    const chosenHandler = typeof(router[path]) !== 'undefined' ? router[path] : router.notFound;
+    const chosenHandler = path.indexOf('public/') > -1 ? router.public : (typeof(router[path]) !== 'undefined' ? router[path] : router.notFound);
+    
+
     // route the request
-    chosenHandler(data, (statusCode, response) => {
+    chosenHandler(data, (statusCode = 200, resPayload, contentType = 'json') => {
       statusCode = typeof(statusCode) === 'number' ? statusCode : 200;
-      if (typeof(response) === 'object') {
-        response = JSON.stringify(response);
+      contentType = typeof(contentType) === 'string' ? contentType : 'json';
+
+      switch (contentType) {
+      case 'json':
         res.setHeader('Content-Type', 'application/json');
+        resPayload = typeof(resPayload) === 'object' ? JSON.stringify(resPayload) : '{}';
+        break;
+      case 'html':
+        res.setHeader('Content-Type', 'text/html');
+        resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
+        break;
+      case 'css':
+        res.setHeader('Content-Type', 'text/css');
+        resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
+        break;
+      case 'js':
+        res.setHeader('Content-Type', 'text/javascript');
+        resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
+        break;
+      case 'plain':
+        res.setHeader('Content-Type', 'text/plain');
+        resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
+        break;
+      case 'png':
+        res.setHeader('Content-Type', 'image/png');
+        resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
+        break;
+      case 'jpg':
+        res.setHeader('Content-Type', 'image/jpeg');
+        resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
+        break;
+      case 'ico':
+        res.setHeader('Content-Type', 'image/x-icon');
+        resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
+        break;
+      default:
+        resPayload = '';
+        break;
       }
+
+
+      
+
       // send the reponse
       res.writeHead(statusCode);
-      res.end(response);
+      res.end(resPayload);
     });
   });
 };

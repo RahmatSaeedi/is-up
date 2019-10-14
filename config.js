@@ -1,6 +1,7 @@
 const { user, host, port, password } = require('../../psqlConfig');
 
-module.exports = {
+
+const  lib = {
   pSqlConfig: {
     user,
     host,
@@ -20,5 +21,13 @@ module.exports = {
   },
   workers : {
     checkFrequencyInSeconds: 5
+  },
+  tempalteGlobals : {
+    appName : 'is UP',
+    companyName : 'isUp',
+    yearCreated : '2018',
+    baseUrl : 'http://localhost/'
   }
 };
+
+module.exports = lib;

@@ -7,8 +7,82 @@ const config = require('../config').handlers;
 const _is = require('../lib/helpers').is;
 const _hash = require('../lib/helpers').hash;
 const _createRandomString = require('../lib/helpers').createRandomString;
+const {getTemplate, addUniversalTemplates, getStaticAsset} = require('../lib/serve_contents');
 
 const handlers = {};
+
+/////////////////////////////////////////////////////////////////
+/****************************************************************
+  html Handler
+****************************************************************/
+/////////////////////////////////////////////////////////////////
+handlers.index = (data, cb) => {
+  if (data.method === 'get') {
+    let templateData = {
+      'head.title' : 'index',
+      'head.description' : 'Uptime monitoring site',
+      'body.title' : 'Hello World!',
+      'body.class' :'index'
+    };
+
+    getTemplate('index', templateData,(err, str) => {
+      if (!err && str) {
+        addUniversalTemplates(str, templateData, (err, str) => {
+          if (!err && str) {
+            cb(200, str, 'html');
+          } else {
+            cb(500,undefined,'html');
+          }
+        });
+      } else {
+        cb(500,undefined,'html');
+      }
+    });
+  } else {
+    cb(405, undefined, 'html');
+  }
+};
+
+
+handlers.favicon = (data, cb) => {
+  if (data.method === 'get') {
+    getStaticAsset('favicon.ico', (err, data) => {
+      if (!err && data) {
+        cb(200, data, 'ico');
+      } else {
+        cb(500,undefined,'html');
+      }
+    });
+  } else {
+    cb(405, undefined, 'html');
+  }
+};
+
+handlers.public = (data, cb) => {
+  if (data.method === 'get') {
+    const assetName = data.path.replace('public/', '').trim();
+    if (assetName.length > 0) {
+      getStaticAsset(assetName, (err, data) => {
+        if (!err && data) {
+          const contentType = assetName.split('.').pop().length > 1 ? assetName.split('.').pop() : 'plain';
+          cb(200, data, contentType);
+        } else {
+          cb(404,undefined,'html');
+        }
+      });
+    } else {
+      cb(404);
+    }
+  } else {
+    cb(405, undefined, 'html');
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/****************************************************************
+  JSON Handler
+****************************************************************/
+/////////////////////////////////////////////////////////////////
 
 /****************************************************************
   users Handler
