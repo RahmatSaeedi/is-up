@@ -43,29 +43,36 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
 }
-
 html {
-  max-width: 1000px;
-  }
-
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+}
 nav {
   position: fixed;
-  width: 100%;
-  height: 100px;
   top: 0;
   left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;  
+  padding-bottom: 15px;
+  width: 80%;
+  min-height: 100px;
+  background-color: #EEE;
+  border-radius: 0 0 25px 25px;;
   }
   nav > .logo {
     display: block;
     float: left;
-    margin-top: 25px;
+    margin-top: 0;
     margin-left: 50px;
-    margin-right: 100px;
-    padding: 15px;
+    padding-top: 15px;
     text-decoration: none;
     text-align: center;
     cursor: pointer;
     color: #444;
+    }
+  nav > .logo > img{
+      width: 75px;
+      height: 75px;
     }
   nav > ul {
     display: block;
@@ -90,9 +97,9 @@ nav {
   nav li:hover {
     background: #0B0;
     cursor: pointer;
-    -webkit-box-shadow: 3px 3px 5px 0px rgba(165,230,25,1);
-    -moz-box-shadow: 3px 3px 5px 0px rgba(165,230,25,1);
-    box-shadow: 3px 3px 5px 0px rgba(165,230,25,1);
+    -webkit-box-shadow:  inset 3px 3px 3px 0px rgba(255,255,255,0.54), 3px 3px 5px 0px rgba(165,230,25,1);
+    -moz-box-shadow:  inset 3px 3px 3px 0px rgba(255,255,255,0.54), 3px 3px 5px 0px rgba(165,230,25,1);
+    box-shadow:  inset 3px 3px 3px 0px rgba(255,255,255,0.54), 3px 3px 5px 0px rgba(165,230,25,1);
     }
   nav li:hover > a {
     text-shadow: 0px 0px 5px #00F;
@@ -110,25 +117,141 @@ nav {
     outline: none;
     }
     
-  
-#content {
-  margin: 100px auto 0 auto;
-  width: 100%;
+.pageWrapper {
   max-width: 900px;
-  min-height: 600px;
   display: block;
-  padding: 25px;
+  margin: 0 auto 0 auto;
   }
+  #content {
+    margin: 100px auto 0 auto;
+    padding: 25px;
+
+    width: 100%;
+    max-width: 900px;
+    min-height: 600px;
+    }
+      h1 {
+        display: block;
+        text-align: center;
+        font-size: 2em;
+        padding-bottom: 0px;
+        font-family: cursive;
+        line-height: 1.8em;
+      }
+      h2 {
+        display: block;
+        text-align: center;
+        font-size: 1.3em;
+        padding-bottom: 30px;
+      }
+    .blurb {
+      display: block;
+      margin: auto;
+      padding: 30px;
+      background-color: #DDD;
+      width: 50%;
+      min-height: 80px;;
+      border-radius: 15px;
+      font-family: cursive;
+      line-height: 2;
+    }
+    .ctaWrapper {
+      display: block;
+      margin-top: 100px;
+      text-align: center;
+    }
+.cta {
+  display: inline-block;
+  min-width: 100px;
+  padding: 15px;
+  border-radius: 7px;
+  margin-left: 50px;
+  margin-right: 50px;
+  letter-spacing: 0.1rem;
+  -webkit-transition: all 50ms ease-in;
+  -moz-transition: all 50ms ease-in;
+  -ms-transition: all 50ms ease-in;
+  -o-transition: all 50ms ease-in;
+  transition: all 50ms ease-in;
+  font-size: 1.5rem;
+}
+.cta:hover {
+  -webkit-box-shadow: inset 3px 3px 3px 0px rgba(255,255,255,0.54), 3px 3px 5px 0px rgba(165,230,25,1);
+  -moz-box-shadow: inset 3px 3px 3px 0px rgba(255,255,255,0.54), 3px 3px 5px 0px rgba(165,230,25,1);
+  box-shadow: inset 3px 3px 3px 0px rgba(255,255,255,0.54), 3px 3px 5px 0px rgba(165,230,25,1);
+  cursor: pointer;
+}
+.green {
+  background-color: #4F5;
+  color: #404;
+}
+.blue {
+  background-color: #2AE;
+  color: #FFF;
+}
+
+.formWrapper {
+}
+
+form {
+  background: #F0FFF0;
+  padding: 20px;
+  border-radius: 30px;
+}
+
+form > div.inputWrapper  {
+  width: 50%;
+  display: flex;
+  direction: ltr;
+  margin-left: auto;
+  margin-right: auto;
+  justify-content: center;  
+}
+
+form .inputWrapper > * {
+  display: block;
+  border: solid 1px #8E8;
+  padding: 7px;
+  margin-bottom: 10px; 
+}
+
+form .inputWrapper > .inputLabel{
+  margin-left: auto;
+  margin-right: 0;
+  border-radius: 7px 0 0 7px;
+  
+}
+form .inputWrapper > .input{
+  width: 30%;
+  margin-left: 0;
+  margin-right: 0;
+  border-radius: 0 7px 7px 0;
+}
+
+#sessionCreate {
+  width: 500px;
+  display: block;
+  margin: auto;
+}
 
 footer {
-  padding: 10px auto 10px auto;
-  width: 100%;
-  min-height: 150px;
   display: block;
+  width: 100%;
+  padding: 50px 0 0 0;
+  min-height: 150px;
   text-align: center;
+  background-color: #EEE;
   }
 
+footer > div {
+  width: 80%;
+  min-height: 2rem;
+  font-size: 1.3rem;
+  margin: 0 auto 0 auto;
+}
 .logedIn {
   display: none;
   }
+
+
     

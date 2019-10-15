@@ -20,7 +20,7 @@ const  lib = {
     maxChecksLimit: 10
   },
   workers : {
-    checkFrequencyInSeconds: 5
+    checkFrequencyInSeconds: 15
   },
   tempalteGlobals : {
     appName : 'is UP',

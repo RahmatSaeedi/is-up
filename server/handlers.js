@@ -19,7 +19,7 @@ const handlers = {};
 handlers.index = (data, cb) => {
   if (data.method === 'get') {
     let templateData = {
-      'head.title' : 'index',
+      'head.title' : 'Home',
       'head.description' : 'Uptime monitoring site',
       'body.title' : 'Hello World!',
       'body.class' :'index'
@@ -42,6 +42,61 @@ handlers.index = (data, cb) => {
     cb(405, undefined, 'html');
   }
 };
+
+handlers.accountCreate = (data, cb) => {
+  if (data.method === 'get') {
+    let templateData = {
+      'head.title' : 'Create an account',
+      'head.description' : 'Sign up is easy and only takes a few second.',
+      'body.class' :'accountCreate'
+    };
+
+    getTemplate('accountCreate', templateData,(err, str) => {
+      if (!err && str) {
+        addUniversalTemplates(str, templateData, (err, str) => {
+          if (!err && str) {
+            cb(200, str, 'html');
+          } else {
+            cb(500,undefined,'html');
+          }
+        });
+      } else {
+        cb(500,undefined,'html');
+      }
+    });
+  } else {
+    cb(405, undefined, 'html');
+  }
+};
+
+handlers.sessionCreate = (data, cb) => {
+  if (data.method === 'get') {
+    let templateData = {
+      'head.title' : 'Login',
+      'head.description' : 'Please enter your credentials.',
+      'body.class' :'sessionCreate'
+    };
+
+    getTemplate('sessionCreate', templateData,(err, str) => {
+      if (!err && str) {
+        addUniversalTemplates(str, templateData, (err, str) => {
+          if (!err && str) {
+            cb(200, str, 'html');
+          } else {
+            cb(500,undefined,'html');
+          }
+        });
+      } else {
+        cb(500,undefined,'html');
+      }
+    });
+  } else {
+    cb(405, undefined, 'html');
+  }
+};
+
+
+
 
 
 handlers.favicon = (data, cb) => {
