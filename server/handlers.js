@@ -1,7 +1,7 @@
 /****************************************************************
   Handlers callback a status code & possibly a payload object
 ****************************************************************/
-const _db = require('../db/index');
+const _db = require('../db/db_v2');
 const _db0 = require('../fs/data');
 const config = require('../config').handlers;
 const _is = require('../lib/helpers').is;
@@ -579,18 +579,22 @@ handlers._checks.delete = (data, cb) => {
               if (!err) {
                 _db.read('users', checkData.email, (err, userData) => {
                   if (!err && userData) {
-                    const checkPosition = userData.checks.indexOf(checkId);
-                    if (checkPosition > -1) {
-                      userData.checks.splice(checkPosition, 1);
-                      _db.update('users', checkData.email, userData, (err) => {
-                        if (!err) {
-                          cb(200);
-                        } else {
-                          cb(500, {"Error" : "Could not update the user's object."});
-                        }
-                      });
+                    if(userData.checks){
+                      const checkPosition = userData.checks.indexOf(checkId);
+                      if (checkPosition > -1) {
+                        userData.checks.splice(checkPosition, 1);
+                        _db.update('users', checkData.email, userData, (err) => {
+                          if (!err) {
+                            cb(200);
+                          } else {
+                            cb(500, {"Error" : "Could not update the user's object."});
+                          }
+                        });
+                      } else {
+                        cb(500, {"Error" : "Could not find the check in user's object."});
+                      }
                     } else {
-                      cb(500, {"Error" : "Could not find the check in user's object."});
+                      cb(200);
                     }
                   } else {
                     cb(500, {"Error" : "Could not clear the user's check."});
