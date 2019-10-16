@@ -93,6 +93,10 @@ nav {
     -ms-transition: all 200ms ease-in;
     -o-transition: all 200ms ease-in;
     transition: all 200ms ease-in;
+    text-decoration: none;
+    color: white;
+    text-shadow: 0px 0px 8px #000;
+    cursor: pointer;
     }
   nav li:hover {
     background: #0B0;
@@ -100,23 +104,30 @@ nav {
     -webkit-box-shadow:  inset 3px 3px 3px 0px rgba(255,255,255,0.54), 3px 3px 5px 0px rgba(165,230,25,1);
     -moz-box-shadow:  inset 3px 3px 3px 0px rgba(255,255,255,0.54), 3px 3px 5px 0px rgba(165,230,25,1);
     box-shadow:  inset 3px 3px 3px 0px rgba(255,255,255,0.54), 3px 3px 5px 0px rgba(165,230,25,1);
-    }
-  nav li:hover > a {
     text-shadow: 0px 0px 5px #00F;
     }
-  nav li > a{
-    text-decoration: none;
-    color: white;
-    text-shadow: 0px 0px 8px #000;
-    margin: 0;
-    padding: 0;
-    border: none;
-    cursor: pointer;
-    }
-  nav a:hover, nav a:active, nav a:focus {
+
+  nav li:hover, nav li:active, nav li:focus, .ctaWrapper > .cta:hover, .ctaWrapper > .cta:active, .ctaWrapper > .cta:focus {
     outline: none;
     }
-    
+
+
+nav .loggedIn {
+  display: none;
+ }
+
+nav .loggedOut {
+  display: inline-block;
+ }
+
+
+nav.loggedIn .loggedOut {
+  display: none;
+ }
+nav.loggedIn .loggedIn {
+  display: inline-block;
+ }
+
 .pageWrapper {
   max-width: 900px;
   display: block;
@@ -155,11 +166,11 @@ nav {
       font-family: cursive;
       line-height: 2;
     }
-    .ctaWrapper {
-      display: block;
-      margin-top: 100px;
-      text-align: center;
-    }
+.ctaWrapper {
+  display: block;
+  margin-top: 100px;
+  text-align: center;
+}
 .cta {
   display: inline-block;
   min-width: 100px;
@@ -174,6 +185,7 @@ nav {
   -o-transition: all 50ms ease-in;
   transition: all 50ms ease-in;
   font-size: 1.5rem;
+  text-decoration: none;
 }
 .cta:hover {
   -webkit-box-shadow: inset 3px 3px 3px 0px rgba(255,255,255,0.54), 3px 3px 5px 0px rgba(165,230,25,1);
@@ -181,58 +193,54 @@ nav {
   box-shadow: inset 3px 3px 3px 0px rgba(255,255,255,0.54), 3px 3px 5px 0px rgba(165,230,25,1);
   cursor: pointer;
 }
-.green {
-  background-color: #4F5;
-  color: #404;
-}
-.blue {
-  background-color: #2AE;
-  color: #FFF;
-}
+
+
 
 .formWrapper {
+  display: block;
 }
 
 form {
+  display: block;
   background: #F0FFF0;
   padding: 20px;
   border-radius: 30px;
+ 
 }
 
 form > div.inputWrapper  {
-  width: 50%;
-  display: flex;
-  direction: ltr;
-  margin-left: auto;
-  margin-right: auto;
-  justify-content: center;  
+  text-align: center;
+  display: block;
 }
 
-form .inputWrapper > * {
-  display: block;
+form div.inputWrapper > * {
+  font-size: px;
+  display: inline-block;
   border: solid 1px #8E8;
   padding: 7px;
   margin-bottom: 10px; 
+  
 }
 
-form .inputWrapper > .inputLabel{
+form div.inputWrapper > .inputLabel{
+  min-width: 100px;
   margin-left: auto;
   margin-right: 0;
   border-radius: 7px 0 0 7px;
   
 }
-form .inputWrapper > .input{
-  width: 30%;
+form div.inputWrapper > .input{
+  min-width: 100px;
   margin-left: 0;
   margin-right: 0;
   border-radius: 0 7px 7px 0;
 }
 
-#sessionCreate {
-  width: 500px;
-  display: block;
-  margin: auto;
+form div.inputWrapper.ctaWrapper {
+  margin-top: 30px;
+  margin-bottom: 30px;
 }
+
 
 footer {
   display: block;
@@ -249,9 +257,18 @@ footer > div {
   font-size: 1.3rem;
   margin: 0 auto 0 auto;
 }
-.logedIn {
-  display: none;
-  }
 
 
-    
+.green {
+  background-color: #4F5;
+  color: #404;
+}
+.blue {
+  background-color: #2AE;
+  color: #FFF;
+}
+
+.red {
+  background-color: #F33;
+  color: #FFF;
+}

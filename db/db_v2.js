@@ -54,12 +54,12 @@ const createCheck = (data , cb) => {
     if (!qErr) {
       query("INSERT INTO checks(id, email, protocol, url, method, success_codes, timeout_seconds, state, last_checked) \
       VALUES($1, $2, $3, $4, $5, $6, $7, $8, to_timestamp($9))", values, (qErr) => {
-       if (!qErr) {
-         cb(false);
-       } else {
-         cb("Could not add the check to the database.");
-       }
-     });
+        if (!qErr) {
+          cb(false);
+        } else {
+          cb("Could not add the check to the database.");
+        }
+      });
     } else {
       cb("Could not add the user_check to the database.");
     }
@@ -131,20 +131,20 @@ const selectCheck = (id , cb) => {
 const selectUser_checks = (email) => {
   query(`SELECT * FROM user_checks WHERE email = $1`, [email], (qErr, qRes) => {
     if (!qErr) {
-      if(qRes && qRes.rows) {
+      if (qRes && qRes.rows) {
         let userChecks = [];
         qRes.rows.forEach((check) => {
           userChecks.push(check.check_id);
         });
         return userChecks;
-      } else{
+      } else {
         return [];
       }
     } else {
       return "An error occurred while looking up the user_checks.";
     }
   });
-}
+};
 
 /********************************
   Update
@@ -196,7 +196,7 @@ const updateCheck = (data, cb) => {
     String(data.successCodes),
     String(data.timeoutSeconds),
     String(data.state),
-    data.lastChecked /1000,
+    data.lastChecked / 1000,
     String(data.id)
   ];
 
@@ -215,7 +215,7 @@ const updateUserChecks = (email, checkIDsToKeep) => {
   const currentChecks = selectUser_checks(email);
   if (currentChecks && currentChecks instanceof Array && currentChecks.length > 0 && checkIDsToKeep && checkIDsToKeep instanceof Array) {
     currentChecks.forEach(check => {
-      if(checkIDsToKeep.indexOf(check) < 0) {
+      if (checkIDsToKeep.indexOf(check) < 0) {
         query(`DELETE FROM user_checks WHERE check_id = $1`, [id], (qErr) => {
           if (!qErr) {
             cb(false);
@@ -275,16 +275,16 @@ lib.create = function(tableName, uID, dataObject, cb) {
   cb = typeof(cb) === 'function' ? cb : false;
 
   if (tableName && uID && dataObject && cb) {
-    switch(tableName) {
-      case 'users':
-          createUser(dataObject, cb);
-        break;
-      case 'tokens':
-          createToken(dataObject, cb);
-        break;
-      case 'checks':
-          createCheck(dataObject, cb);
-        break;
+    switch (tableName) {
+    case 'users':
+      createUser(dataObject, cb);
+      break;
+    case 'tokens':
+      createToken(dataObject, cb);
+      break;
+    case 'checks':
+      createCheck(dataObject, cb);
+      break;
     }
   } else {
     cb("Expected strings for 'tableName'/'uID', object for 'dataObject', and function for 'cb'.");
@@ -301,16 +301,16 @@ lib.read = function(tableName, uID, cb) {
   cb = typeof(cb) === 'function' ? cb : false;
 
   if (tableName && uID && cb) {
-    switch(tableName) {
-      case 'users':
-          selectUser(uID, cb);
-        break;
-      case 'tokens':
-          selectToken(uID, cb);
-        break;
-      case 'checks':
-          selectCheck(uID, cb);
-        break;
+    switch (tableName) {
+    case 'users':
+      selectUser(uID, cb);
+      break;
+    case 'tokens':
+      selectToken(uID, cb);
+      break;
+    case 'checks':
+      selectCheck(uID, cb);
+      break;
     }
   } else {
     cb("Expected strings for 'tableName'/'uID', object for 'dataObject', and function for 'cb'.");
@@ -328,16 +328,16 @@ lib.update = function(tableName, uID, dataObject, cb) {
   cb = typeof(cb) === 'function' ? cb : false;
 
   if (tableName && uID && dataObject && cb) {
-    switch(tableName) {
-      case 'users':
-          updateUser(dataObject, cb);
-        break;
-      case 'tokens':
-          updateToken(dataObject, cb);
-        break;
-      case 'checks':
-          updateCheck(dataObject, cb);
-        break;
+    switch (tableName) {
+    case 'users':
+      updateUser(dataObject, cb);
+      break;
+    case 'tokens':
+      updateToken(dataObject, cb);
+      break;
+    case 'checks':
+      updateCheck(dataObject, cb);
+      break;
     }
   } else {
     cb("Expected strings for 'tableName'/'uID', object for 'dataObject', and function for 'cb'.");
@@ -354,16 +354,16 @@ lib.delete = function(tableName, uID, cb) {
   cb = typeof(cb) === 'function' ? cb : false;
 
   if (tableName && uID && cb) {
-    switch(tableName) {
-      case 'users':
-          deleteUser(uID, cb);
-        break;
-      case 'tokens':
-          deleteToken(uID, cb);
-        break;
-      case 'checks':
-          deleteCheck(uID, cb);
-        break;
+    switch (tableName) {
+    case 'users':
+      deleteUser(uID, cb);
+      break;
+    case 'tokens':
+      deleteToken(uID, cb);
+      break;
+    case 'checks':
+      deleteCheck(uID, cb);
+      break;
     }
   } else {
     cb("Expected strings for 'tableName'/'uID', and function for 'cb'.");

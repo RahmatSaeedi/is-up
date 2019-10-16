@@ -13,18 +13,18 @@
   <body class="{body.class}">
     <div class="pageWrapper">
       <nav>
-        <a href="/" class="logo" >
+        <div onclick="location.href = '/'" class="logo" >
           <img src="public/logo.png" alt="Logo" />
-        </a>
+        </div>
         <ul class="menue">
-          <li><a href="/">Home</a></li>
+          <li onclick="location.href = '/'">Home</li>
 
-          <li class="logedIn"><a href="/account/create">Signup</a></li>
-          <li class="logedIn"><a href="/session/create">Login</a></li>
+          <li class="loggedOut" onclick="location.href = '/account/create'">Signup</li>
+          <li class="loggedOut" onclick="location.href = '/session/create'">Login</li>
 
-          <li class="logedOut"><a href="/checks/all">Dashboard</a></li>
-          <li class="logedOut"><a href="/account/edit">Account Settings</a></li>
-          <li class="logedOut"><a href="#">Logout</a></li>
+          <li class="loggedIn" onclick="location.href = '/checks/all'">Dashboard</li>
+          <li class="loggedIn" onclick="location.href = '/account/edit'">Account Settings</li>
+          <li class="loggedIn" onclick="location.href = '#'" id="logoutButton">Logout</li>
         </ul>
       </nav>
       <div id="content">

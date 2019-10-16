@@ -96,6 +96,82 @@ handlers.sessionCreate = (data, cb) => {
 };
 
 
+handlers.sessionDeleted = (data, cb) => {
+  if (data.method === 'get') {
+    let templateData = {
+      'head.title' : 'Logged Out',
+      'head.description' : 'You have been logged out.',
+      'body.class' :'sessionDeleted'
+    };
+
+    getTemplate('sessionDeleted', templateData,(err, str) => {
+      if (!err && str) {
+        addUniversalTemplates(str, templateData, (err, str) => {
+          if (!err && str) {
+            cb(200, str, 'html');
+          } else {
+            cb(500,undefined,'html');
+          }
+        });
+      } else {
+        cb(500,undefined,'html');
+      }
+    });
+  } else {
+    cb(405, undefined, 'html');
+  }
+};
+
+handlers.accountEdit = (data, cb) => {
+  if (data.method === 'get') {
+    let templateData = {
+      'head.title' : 'Account Settings',
+      'body.class' :'accountEdit'
+    };
+
+    getTemplate('accountEdit', templateData,(err, str) => {
+      if (!err && str) {
+        addUniversalTemplates(str, templateData, (err, str) => {
+          if (!err && str) {
+            cb(200, str, 'html');
+          } else {
+            cb(500,undefined,'html');
+          }
+        });
+      } else {
+        cb(500,undefined,'html');
+      }
+    });
+  } else {
+    cb(405, undefined, 'html');
+  }
+};
+
+handlers.accountDeleted = (data, cb) => {
+  if (data.method === 'get') {
+    let templateData = {
+      'head.title' : 'Account Deleted',
+      'head.description' : 'Your account has been deleted.',
+      'body.class' :'accountDeleted'
+    };
+
+    getTemplate('accountDeleted', templateData,(err, str) => {
+      if (!err && str) {
+        addUniversalTemplates(str, templateData, (err, str) => {
+          if (!err && str) {
+            cb(200, str, 'html');
+          } else {
+            cb(500,undefined,'html');
+          }
+        });
+      } else {
+        cb(500,undefined,'html');
+      }
+    });
+  } else {
+    cb(405, undefined, 'html');
+  }
+};
 
 
 
@@ -274,6 +350,7 @@ handlers._users.put = (data, cb) => {
 // Optional data: none
 // @TODO delete any other data associated with the user
 handlers._users.delete = (data, cb) => {
+  console.log(data.query.email)
   const email = _is.email(data.query.email);
   const token = _is.token(data.headers.token);
 
@@ -634,7 +711,7 @@ handlers._checks.delete = (data, cb) => {
               if (!err) {
                 _db.read('users', checkData.email, (err, userData) => {
                   if (!err && userData) {
-                    if(userData.checks){
+                    if (userData.checks) {
                       const checkPosition = userData.checks.indexOf(checkId);
                       if (checkPosition > -1) {
                         userData.checks.splice(checkPosition, 1);

@@ -58,6 +58,7 @@ server.unifiedServer = (req, res) => {
       headers: req.headers,
       payload: _parseJsonToObject(payload)
     };
+    console.log(data);
     // choose the handler
     const chosenHandler = path.indexOf('public/') > -1 ? router.public : (typeof(router[path]) !== 'undefined' ? router[path] : router.notFound);
     

@@ -1,0 +1,66 @@
+<h1>Account Settings</h1>
+<h2>Edit your account details.</h2>
+
+
+<div class="formWrapper">
+  <form id="accountEdit1" action="api/users" method="PUT">
+    <input type="hidden" name="_method" value="PUT" />
+    <div class="formError"></div>
+    <div class="formSuccess"></div>
+
+    <div class="inputWrapper">
+      <div class="inputLabel">First Name
+        </div><input class="input firstName" type="text" name="firstName" placeholder="&emsp;&emsp;first name" />
+    </div>
+    <div class="inputWrapper">
+      <div class="inputLabel">Last Name
+        </div><input class="input lastName" type="text" name="lastName" placeholder="&emsp;&emsp;last name" />
+    </div>
+    <div class="inputWrapper">
+        <div class="inputLabel">Email
+          </div><input class="input email"  type="text" name="email" placeholder="&emsp;&emsp;email" disabled />
+    </div>
+    <div class="inputWrapper ctaWrapper">
+      <button class="cta blue" type="submit">Save Changes</button>
+    </div>
+  </form>
+</div>
+
+<hr />
+
+<div class="formWrapper">
+    <form id="accountEdit2" action="api/users" method="PUT">
+      <input type="hidden" name="_method" value="PUT" />
+      <div class="formError"></div>
+      <div class="formSuccess"></div>
+  
+
+      <div class="inputWrapper">
+          <div class="inputLabel">Email
+            </div><input  class="input email" type="text" name="email" placeholder="&emsp;&emsp;email" disabled />
+      </div>
+      <div class="inputWrapper">
+        <div class="inputLabel">New Password
+          </div><input class="input newPassword" type="password" name="password" placeholder="&emsp;&emsp;password" />
+      </div>
+      <div class="inputWrapper ctaWrapper">
+        <button class="cta blue" type="submit">Update password</button>
+      </div>
+    </form>
+  </div>
+
+  <hr />
+
+<div class="formWrapper">
+    <form id="accountEdit3" action="api/users" method="DELETE">
+      <input type="hidden" name="_method" value="DELETE" />
+      <div class="formError"></div>
+      <div class="formSuccess"></div>
+      <div class="warning">Warning: This action cannot be undone!</div>
+      <input  class="input email" type="hidden" name="email"/>
+
+      <div class="inputWrapper ctaWrapper">
+        <button class="cta red" type="submit">Delete Account</button>
+      </div>
+    </form>
+  </div>
