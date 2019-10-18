@@ -1,12 +1,34 @@
 {
-  "name": "is-up",
-  "version": "0.1.0",
-  "private": false,
+  "name": "@rahmatsaeedi/is-up",
+  "version": "1.0.0",
   "dependencies": {
     "pg": "^7.12.1"
   },
   "scripts": {
     "start": "node app.js",
     "fs_schema": "node ./migration/fs_schema.js"
-  }
+  },
+  "description": "A web-status monitoring sites that checks whether they are down or not; A NodeJS site that can run without external dependencies.",
+  "main": "app.js",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RahmatSaeedi/is-up.git"
+  },
+  "keywords": [
+    "nodejs",
+    "website",
+    "monitoring",
+    "monitoring-tool"
+  ],
+  "author": "Rahmat Saeedi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RahmatSaeedi/is-up/issues"
+  },
+  "homepage": "https://github.com/RahmatSaeedi/is-up#readme"
 }
