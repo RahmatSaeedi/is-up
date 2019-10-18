@@ -73,19 +73,44 @@ const createCheck = (data , cb) => {
   Select
 ********************************/
 
+const selectUser_checks = (email, cb) => {
+  let userChecks =[];
+  query(`SELECT * FROM user_checks WHERE email = $1`, [email], (qErr, qRes) => {
+    if (!qErr) {
+      if (qRes && qRes.rows) {
+        qRes.rows.forEach((check) => {
+          userChecks.push(check.check_id);
+        });
+        cb(false, userChecks);
+      } else {
+        cb(false, userChecks);
+      }
+    } else {
+      cb("An error occurred while looking up the user_checks.");
+    }
+  });
+};
+
+
 const selectUser = (email, cb) => {
   query(`SELECT * FROM users WHERE email = $1`, [email], (qErr, qRes) => {
     if (!qErr && qRes.rows[0]) {
-      const userData = {
-        firstName   : qRes.rows[0].first_name,
-        lastName    : qRes.rows[0].last_name,
-        email       : qRes.rows[0].email,
-        password    : qRes.rows[0].password,
-        tosAgreement: qRes.rows[0].tos_agreement,
-        dateCreated : qRes.rows[0].date_created,
-        checks : selectUser_checks(qRes.rows[0].email)
-      };
-      cb(false, userData);
+    selectUser_checks(qRes.rows[0].email, (err, checks) => {
+        if(!err) {
+          const userData = {
+            firstName   : qRes.rows[0].first_name,
+            lastName    : qRes.rows[0].last_name,
+            email       : qRes.rows[0].email,
+            password    : qRes.rows[0].password,
+            tosAgreement: qRes.rows[0].tos_agreement,
+            dateCreated : qRes.rows[0].date_created,
+            checks
+          };
+          cb(false, userData);
+        } else {
+          cb("Could not get the user's current checks.")
+        }
+      });
     } else {
       cb("An error occurred while looking up the user.");
     }
@@ -124,24 +149,6 @@ const selectCheck = (id , cb) => {
       cb(false, checkData);
     } else {
       cb("An error occurred while looking up the check.");
-    }
-  });
-};
-
-const selectUser_checks = (email) => {
-  query(`SELECT * FROM user_checks WHERE email = $1`, [email], (qErr, qRes) => {
-    if (!qErr) {
-      if (qRes && qRes.rows) {
-        let userChecks = [];
-        qRes.rows.forEach((check) => {
-          userChecks.push(check.check_id);
-        });
-        return userChecks;
-      } else {
-        return [];
-      }
-    } else {
-      return "An error occurred while looking up the user_checks.";
     }
   });
 };
@@ -212,20 +219,26 @@ const updateCheck = (data, cb) => {
 };
 
 const updateUserChecks = (email, checkIDsToKeep) => {
-  const currentChecks = selectUser_checks(email);
-  if (currentChecks && currentChecks instanceof Array && currentChecks.length > 0 && checkIDsToKeep && checkIDsToKeep instanceof Array) {
-    currentChecks.forEach(check => {
-      if (checkIDsToKeep.indexOf(check) < 0) {
-        query(`DELETE FROM user_checks WHERE check_id = $1`, [id], (qErr) => {
-          if (!qErr) {
-            cb(false);
-          } else {
-            cb("Could not remove user_check from db.");
+  selectUser_checks(email, (err, currentChecks) => {
+    if(!err) {
+      if (currentChecks && currentChecks instanceof Array && currentChecks.length > 0 && checkIDsToKeep && checkIDsToKeep instanceof Array) {
+        currentChecks.forEach(check => {
+          if (checkIDsToKeep.indexOf(check) < 0) {
+            query(`DELETE FROM user_checks WHERE check_id = $1`, [id], (qErr) => {
+              if (!qErr) {
+                cb(false);
+              } else {
+                cb("Could not remove user_check from db.");
+              }
+            });
           }
         });
       }
-    });
-  }
+    } else {
+      cb("Could not get the user's current checks.")
+    }
+  });
+
 };
 
 /********************************

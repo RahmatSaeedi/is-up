@@ -46,7 +46,9 @@ table {
 html {
   font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
 }
+body {min-width: 500px;}
 nav {
+  min-width: 500px;
   position: fixed;
   top: 0;
   left: 0;
@@ -230,7 +232,7 @@ form div.inputWrapper > .inputLabel{
   
 }
 form div.inputWrapper > .input{
-  min-width: 100px;
+  min-width: 200px;
   margin-left: 0;
   margin-right: 0;
   border-radius: 0 7px 7px 0;
@@ -241,7 +243,89 @@ form div.inputWrapper.ctaWrapper {
   margin-bottom: 30px;
 }
 
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
 
+#noChecksMessage, #createCheckCTA {
+  display: none;
+}
+
+
+table {
+  font-family: cursive;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table td, table th {
+  border: 1px solid #DDD;
+  text-align: center;
+  padding: 10px;
+}
+
+table tr:nth-child(even){
+  background-color: #F5F5F5;
+}
+
+table tr:hover {
+  background-color: #DDD
+}
+
+table th {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background-color: #4B5;
+  color: #FFF;
+}
+.formError, .formSuccess, .warning {
+  width: 80%;
+  margin:auto;
+  margin-bottom: 30px;
+  text-align: center;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 1.2em;
+  font-family: cursive;
+  -webkit-transition: all 200ms ease-in;
+  -moz-transition: all 200ms ease-in;
+  -ms-transition: all 200ms ease-in;
+  -o-transition: all 200ms ease-in;
+  transition: all 200ms ease-in;
+}
+.formError, .formSuccess {
+  display: none;
+}
+.formError {
+  border: 1px solid red;
+}
+.formSuccess {
+  border: 1px solid green;
+}
+.warning {
+  border: 1px solid #880;
+  color: red;
+}
+.formError, .formSuccess {
+    -moz-animation: cssAnimation 0s ease-in 5s forwards;
+    -webkit-animation: cssAnimation 0s ease-in 5s forwards;
+    -o-animation: cssAnimation 0s ease-in 5s forwards;
+    animation: cssAnimation 0s ease-in 5s forwards;
+    -webkit-animation-fill-mode: forwards;
+    animation-fill-mode: forwards;
+}
+@keyframes cssAnimation {
+    to {
+      visibility: hidden;
+    }
+}
+@-webkit-keyframes cssAnimation {
+    to {
+      visibility: hidden;
+    }
+}
 footer {
   display: block;
   width: 100%;

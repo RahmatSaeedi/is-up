@@ -173,7 +173,81 @@ handlers.accountDeleted = (data, cb) => {
   }
 };
 
+handlers.checksCreate = (data, cb) => {
+  if (data.method === 'get') {
+    let templateData = {
+      'head.title' : 'Create a New Check',
+      'body.class' :'checksCreate'
+    };
 
+    getTemplate('checksCreate', templateData,(err, str) => {
+      if (!err && str) {
+        addUniversalTemplates(str, templateData, (err, str) => {
+          if (!err && str) {
+            cb(200, str, 'html');
+          } else {
+            cb(500,undefined,'html');
+          }
+        });
+      } else {
+        cb(500,undefined,'html');
+      }
+    });
+  } else {
+    cb(405, undefined, 'html');
+  }
+};
+
+
+handlers.checksList = (data, cb) => {
+  if (data.method === 'get') {
+    let templateData = {
+      'head.title' : 'Dashboard',
+      'body.class' :'checksList'
+    };
+
+    getTemplate('checksList', templateData,(err, str) => {
+      if (!err && str) {
+        addUniversalTemplates(str, templateData, (err, str) => {
+          if (!err && str) {
+            cb(200, str, 'html');
+          } else {
+            cb(500,undefined,'html');
+          }
+        });
+      } else {
+        cb(500,undefined,'html');
+      }
+    });
+  } else {
+    cb(405, undefined, 'html');
+  }
+};
+
+handlers.checksEdit = (data, cb) => {
+  if (data.method === 'get') {
+    let templateData = {
+      'head.title' : 'Check Details',
+      'body.class' :'checksEdit'
+    };
+
+    getTemplate('checksEdit', templateData,(err, str) => {
+      if (!err && str) {
+        addUniversalTemplates(str, templateData, (err, str) => {
+          if (!err && str) {
+            cb(200, str, 'html');
+          } else {
+            cb(500,undefined,'html');
+          }
+        });
+      } else {
+        cb(500,undefined,'html');
+      }
+    });
+  } else {
+    cb(405, undefined, 'html');
+  }
+};
 
 handlers.favicon = (data, cb) => {
   if (data.method === 'get') {
@@ -350,7 +424,6 @@ handlers._users.put = (data, cb) => {
 // Optional data: none
 // @TODO delete any other data associated with the user
 handlers._users.delete = (data, cb) => {
-  console.log(data.query.email)
   const email = _is.email(data.query.email);
   const token = _is.token(data.headers.token);
 
@@ -723,7 +796,7 @@ handlers._checks.delete = (data, cb) => {
                           }
                         });
                       } else {
-                        cb(500, {"Error" : "Could not find the check in user's object."});
+                        cb(200);
                       }
                     } else {
                       cb(200);

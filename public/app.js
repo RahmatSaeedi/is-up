@@ -8,7 +8,6 @@ app.config = {
 // AJAX client
 app.client = {};
 app.client.request = function(headers, path, method, queryStringObject, payload, cb) {
-  console.log(method, path)
   headers = typeof(headers) === 'object' && headers !== null ? headers : {};
   path = typeof(path) === 'string' ? path : '/';
   method = typeof(method) === 'string' && ['POST', 'GET', 'PUT', 'DELETE'].indexOf(method) > -1 ? method.toUpperCase() : 'GET';
@@ -73,7 +72,7 @@ app.logUserOut = function() {
     const queryStringObject = {
       'id' : tokenId
     };
-    app.client.request(undefined, 'api/tokens', 'DELETE', queryStringObject, undefined, function(err) {
+    app.client.request(undefined, '/api/tokens', 'DELETE', queryStringObject, undefined, function(err) {
       app.setSessionToken(false);
       window.Location = '/session/deleted';
     });
@@ -94,23 +93,44 @@ app.bindForms = function() {
         let queryStringObject = undefined;
         const formId = this.id;
         const path =this.action;
-
+        console.log(this.id)
         switch (formId) {
           case 'accountEdit3':
               queryStringObject = {
-                email: this.querySelector('#' + formId + ' .email').value
+                email: this.querySelector('#accountEdit3 .email').value
               };
             break;
-          default:
+          case 'checksCreate':
+              payload.successCodes =[];
+              payload.method = this.querySelector('#checksCreate [name=httpmethod]').value;
+              payload.protocol = this.querySelector('#checksCreate [name=protocol]').value;
+              payload.url = this.querySelector('#checksCreate [name=url]').value;
+              payload.timeoutSeconds = Number(this.querySelector('#checksCreate [name=timeoutSeconds]').value);
             break;
+
+            case 'checksEdit1':
+              payload.successCodes =[];
+              payload.method = this.querySelector('#checksEdit1 [name=httpmethod]').value;
+              payload.protocol = this.querySelector('#checksEdit1 [name=protocol]').value;
+              payload.url = this.querySelector('#checksEdit1 [name=url]').value;
+              payload.timeoutSeconds = Number(this.querySelector('#checksEdit1 [name=timeoutSeconds]').value);
+              payload.id = this.querySelector('#checksEdit1 [name="_id"]').value;
+            break;
+            case 'checksEdit2':
+                queryStringObject = {
+                  id: this.querySelector("#checksEdit2 [name='_id']").value
+                };
+              break;
         }
 
 
         document.querySelector("#" + formId + " .formError").style.display = "hidden";
 
         for (let i = 0; i < elements.length; i++) {
-          if (elements[i].type !== 'submit' && elements[i].name !== '_method') {
+          if (elements[i].type !== 'submit' && elements[i].name !== '_method' && elements[i].name !== 'successCodes' && elements[i].name !== 'httpmethod' && elements[i].name !== 'timeoutSeconds'  && elements[i].name !== '_id') {
             payload[elements[i].name] = (elements[i].type === 'checkbox' ? elements[i].checked : elements[i].value);
+          } else if ( elements[i].name === 'successCodes') {
+            elements[i].checked ? payload.successCodes.push(elements[i].value) : null;
           } else if(elements[i].name === '_method') {
             method = elements[i].value.toUpperCase();
           }
@@ -125,7 +145,7 @@ app.bindForms = function() {
             } else {
               const error = typeof(responsePayload.Error) === 'string' ? responsePayload.Error : '';
               document.querySelector("#" + formId + " .formError").innerHTML = error;
-              document.querySelector("#" + formId + " .formError").style.display = 'block';  
+              document.querySelector("#" + formId + " .formError").style.display = 'block';
             }
           } else {
             document.querySelector("#" + formId + " .formSuccess").innerHTML = "Success";
@@ -151,7 +171,7 @@ app.formResponseProcessor = function(formId, requestPayload, responsePayload) {
       'email': requestPayload.email,
       'password': requestPayload.password
     };
-    app.client.request(undefined, 'api/tokens', 'POST', undefined, payload, function(statusCode, resp) {
+    app.client.request(undefined, '/api/tokens', 'POST', undefined, payload, function(statusCode, resp) {
       if (statusCode === 200) {
         app.setSessionToken(resp);
         window.location = '/checks/all';
@@ -161,8 +181,6 @@ app.formResponseProcessor = function(formId, requestPayload, responsePayload) {
       }
     });
     break;
-
-
   case 'sessionCreate':
     app.setSessionToken(responsePayload);
     window.location = '/checks/all';
@@ -175,7 +193,16 @@ app.formResponseProcessor = function(formId, requestPayload, responsePayload) {
     break;
   case 'accountEdit3':
     app.logUserOut();
-    window.location = '/account/deleted'
+    window.location = '/account/deleted';
+    break;
+  case 'checksCreate':
+    window.location = '/checks/all';
+    break;
+  case 'checksEdit1':
+    app.loadChecksEditPage();
+    break;
+  case 'checksEdit2':
+    window.location = '/checks/all';
     break;
   }
   
@@ -230,10 +257,10 @@ app.renewToken = function(cb) {
       'extend' : true
     };
 
-    app.client.request(undefined, 'api/tokens', 'PUT', undefined, payload, function(statusCode, resp) {
+    app.client.request(undefined, '/api/tokens', 'PUT', undefined, payload, function(statusCode, resp) {
       if (statusCode === 200) {
         queryStringObject = {'id' : currentToken.id};
-        app.client.request(undefined, 'api/tokens', 'GET', queryStringObject, undefined, function(statusCode, resp) {
+        app.client.request(undefined, '/api/tokens', 'GET', queryStringObject, undefined, function(statusCode, resp) {
           if (statusCode === 200) {
             app.setSessionToken(resp);
             cb(false);
@@ -258,9 +285,16 @@ app.renewToken = function(cb) {
 
 app.loadDataOnPage = function() {
   const primaryBodyClass = document.querySelector("body").classList[0];
-  
-  if(typeof(primaryBodyClass) === 'string' && primaryBodyClass === 'accountEdit') {
-    app.loadAccountEditPage();
+    switch(primaryBodyClass) {
+      case 'accountEdit':
+        app.loadAccountEditPage();
+      break;
+      case 'checksList':
+        app.loadChecksListPage();
+      break;
+      case 'checksEdit':
+        app.loadChecksEditPage();
+      break;
   }
 };
 
@@ -271,7 +305,7 @@ app.loadAccountEditPage = function () {
       email
     };
 
-    app.client.request(undefined, 'api/users', 'GET', queryStringObject, undefined, function(statusCode, responsePayload) {
+    app.client.request(undefined, '/api/users', 'GET', queryStringObject, undefined, function(statusCode, responsePayload) {
       if(statusCode === 200) {
         document.querySelector("#accountEdit1 .firstName").value = responsePayload.firstName;
         document.querySelector("#accountEdit1 .lastName").value = responsePayload.lastName;
@@ -282,6 +316,87 @@ app.loadAccountEditPage = function () {
         app.logUserOut();
       }
     });
+  } else {
+    app.logUserOut();
+  }
+};
+app.loadChecksEditPage = function () {
+  const id = typeof(window.location.href.split("=")[1]) === 'string'? window.location.href.split("=")[1] : false;
+  if(id) {
+    const queryStringObject = {
+      'id' : id
+    };
+
+    app.client.request(undefined, '/api/checks', 'GET', queryStringObject, undefined, function(statusCode, data) {
+      if(statusCode === 200 && data) {
+        document.querySelector("#checksEdit1 [name='_id']").value = data.id;
+        document.querySelector("#checksEdit2 [name='_id']").value = data.id;
+        document.querySelector("#checksEdit1 [name='state']").value = data.state;
+        document.querySelector("#checksEdit1 [name='protocol']").value = data.protocol;
+        document.querySelector("#checksEdit1 [name='url']").value = data.url;
+        document.querySelector("#checksEdit1 [name='httpmethod']").value = data.method;
+        document.querySelector("#checksEdit1 [name='timeoutSeconds']").value = data.timeoutSeconds;
+
+        const successCodeCheckboxes = document.querySelectorAll("#checksEdit1 [name='successCodes']");
+        for(let i=0; i< successCodeCheckboxes.length; i++){
+          if(data.successCodes.indexOf(parseInt(successCodeCheckboxes[i].value)) > -1) {
+            successCodeCheckboxes[i].checked = true;
+          }
+        }
+      } else {
+        window.location = '/checks/all';
+      }
+    });
+  } else {
+    window.location = '/checks/all';
+  }
+};
+
+app.loadChecksListPage = function() {
+  const email = typeof(app.config.sessionToken.email) === 'string' ? app.config.sessionToken.email : false;
+  if(email) {
+    app.client.request(undefined, '/api/users', 'GET', {email}, undefined, function(statusCode, data) {
+      if(statusCode === 200) {
+        const allChecks = typeof(data.checks) === 'object' && data.checks instanceof Array ? data.checks : [];
+        if(allChecks.length > 0) {
+          allChecks.forEach(function(checkId) {
+            const queryStringObject = {
+              'id' : checkId
+            };
+            app.client.request(undefined, '/api/checks', 'GET', queryStringObject, undefined, function(statusCode, data) {
+              if(statusCode === 200) {
+                const table = document.getElementById("checksListTable");
+                let tr = table.insertRow(-1);
+                tr.classList.add('checkRow');
+                let td0 = tr.insertCell(0);
+                let td1 = tr.insertCell(1);
+                let td2 = tr.insertCell(2);
+                let td3 = tr.insertCell(3);
+                let td4 = tr.insertCell(4);
+
+                td0.innerHTML = data.method.toUpperCase();
+                td1.innerHTML = data.protocol + '://';
+                td2.innerHTML = data.url;
+                td3.innerHTML = typeof(data.state) === 'string' && ['up', 'down'].indexOf(data.state) > -1? data.state : 'unknown';
+                td4.innerHTML = '<a href = "/checks/edit?id=' + data.id +'" >View Details</a>';
+              } else {
+                console.log("Error trying to load check ID: ", checkId);
+              }
+            });
+          });
+          if(allChecks.length < 10){
+            document.getElementById("createCheckCTA").style.display = 'block';
+          }
+        } else {
+          document.getElementById("noChecksMessage").style.display ='table-row';
+          document.getElementById("createCheckCTA").style.display ='block';
+        }
+      } else {
+        app.logUserOut();
+      }
+    });
+  } else {
+    app.logUserOut();
   }
 };
 

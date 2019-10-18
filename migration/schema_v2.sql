@@ -8,7 +8,6 @@ CREATE TABLE users (
   email VARCHAR(255) PRIMARY KEY NOT NULL UNIQUE,
   password VARCHAR(64) NOT NULL,
   tos_agreement BOOLEAN NOT NULL DEFAULT FALSE,
-  checks VARCHAR NOT NULL DEFAULT '',
   date_created DATE
 );
 
