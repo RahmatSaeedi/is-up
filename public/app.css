@@ -308,24 +308,7 @@ table th {
   border: 1px solid #880;
   color: red;
 }
-.formError, .formSuccess {
-    -moz-animation: cssAnimation 0s ease-in 5s forwards;
-    -webkit-animation: cssAnimation 0s ease-in 5s forwards;
-    -o-animation: cssAnimation 0s ease-in 5s forwards;
-    animation: cssAnimation 0s ease-in 5s forwards;
-    -webkit-animation-fill-mode: forwards;
-    animation-fill-mode: forwards;
-}
-@keyframes cssAnimation {
-    to {
-      visibility: hidden;
-    }
-}
-@-webkit-keyframes cssAnimation {
-    to {
-      visibility: hidden;
-    }
-}
+
 footer {
   display: block;
   width: 100%;

@@ -1,8 +1,8 @@
 /****************************************************************
   Handlers callback a status code & possibly a payload object
 ****************************************************************/
-const _db = require('../db/db_v2');
-const _db0 = require('../fs/data');
+const __database = require('../config').database.database;
+const _db = require('../' + __database + '/db');
 const config = require('../config').handlers;
 const _is = require('../lib/helpers').is;
 const _hash = require('../lib/helpers').hash;

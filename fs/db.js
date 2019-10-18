@@ -32,7 +32,7 @@ const parseJsonToObject = (str = '') => {
 /********************************
  create new directory
 ********************************/
-lib.mkDir =  function(dirName = '', cb = (err)=>{}) {
+lib.mkDir =  function(dirName = '', cb = ()=>{}) {
   if (typeof(dirName) === 'string') {
     fs.mkdir(lib.baseDir + dirName, (err) => {
       if (!err) {
@@ -50,7 +50,7 @@ lib.mkDir =  function(dirName = '', cb = (err)=>{}) {
 /********************************
   Writes data to a new file
 ********************************/
-lib.create = function(dir = '', fileName = '', dataObject = {}, cb  = (err)=>{}) {
+lib.create = function(dir = '', fileName = '', dataObject = {}, cb  = ()=>{}) {
   dir = typeof(dir) === 'string' ? dir : false;
   fileName = typeof(fileName) === 'string' ? fileName : false;
   dataObject = typeof(dataObject) === 'object' ? dataObject : false;
@@ -92,7 +92,7 @@ lib.create = function(dir = '', fileName = '', dataObject = {}, cb  = (err)=>{})
 /********************************
   Read data from a file
 ********************************/
-lib.read = function(dir = '', fileName = '', cb = (err, data)=>{}) {
+lib.read = function(dir = '', fileName = '', cb = ()=>{}) {
   dir = typeof(dir) === 'string' ? dir : false;
   fileName = typeof(fileName) === 'string' ? fileName : false;
   cb = typeof(cb) === 'function' ? cb : false;
@@ -114,7 +114,7 @@ lib.read = function(dir = '', fileName = '', cb = (err, data)=>{}) {
 /********************************
   Update data on a file
 ********************************/
-lib.update = function(dir = '', fileName = '', dataObject = {}, cb = (err)=>{}) {
+lib.update = function(dir = '', fileName = '', dataObject = {}, cb = ()=>{}) {
   dir = typeof(dir) === 'string' ? dir : false;
   fileName = typeof(fileName) === 'string' ? fileName : false;
   dataObject = typeof(dataObject) === 'object' ? dataObject : false;
@@ -156,7 +156,7 @@ lib.update = function(dir = '', fileName = '', dataObject = {}, cb = (err)=>{}) 
 /********************************
   Delete a file
 ********************************/
-lib.delete = function(dir = '', fileName = '', cb  = (err)=>{}, cascadeDelete = true) {
+lib.delete = function(dir = '', fileName = '', cb  = ()=>{}, cascadeDelete = true) {
   dir = typeof(dir) === 'string' ? dir : false;
   fileName = typeof(fileName) === 'string' ? fileName : false;
   cb = typeof(cb) === 'function' ? cb : false;
@@ -212,7 +212,7 @@ cascade.users = {
 /********************************
   List all file in a directory
 ********************************/
-lib.list = (dir = '', cb = (err, data)=>{}) => {
+lib.list = (dir = '', cb = ()=>{}) => {
   dir = typeof(dir) === 'string' ? dir : false;
   cb = typeof(cb) === 'function' ? cb : false;
   if (dir && cb) {

@@ -1,4 +1,4 @@
-const {mkDir} = require('../fs/data');
+const {mkDir} = require('../fs/db');
 
 mkDir('', () => {
   mkDir('users/', () => {

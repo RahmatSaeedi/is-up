@@ -3,11 +3,12 @@ const https = require('https');
 const url = require('url');
 const fs = require('fs');
 const StringDecoder = require('string_decoder').StringDecoder;
+const join = require('path').join;
 
 const config = require('../config').server;
 const router = require('./router');
 const _parseJsonToObject = require('../lib/helpers').parseJsonToObject;
-const join = require('path').join;
+
 
 
 // Server initiation & setup
@@ -96,17 +97,41 @@ server.unifiedServer = (req, res) => {
         res.setHeader('Content-Type', 'image/jpeg');
         resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
         break;
+      case 'jpeg':
+        res.setHeader('Content-Type', 'image/jpeg');
+        resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
+        break;
+      case 'tiff':
+        res.setHeader('Content-Type', 'image/tiff');
+        resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
+        break;
+      case 'svg':
+        res.setHeader('Content-Type', 'image/svg+xml');
+        resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
+        break;
       case 'ico':
         res.setHeader('Content-Type', 'image/x-icon');
         resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
         break;
+      case 'gif':
+        res.setHeader('Content-Type', 'image/gif');
+        resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
+        break;
+      case 'djvu':
+        res.setHeader('Content-Type', 'image/vnd.djvu');
+        resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
+        break;
+      case 'pdf':
+        res.setHeader('Content-Type', 'application/pdf');
+        resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
+        break;
+      case 'zip':
+        res.setHeader('Content-Type', 'application/zip');
+        resPayload = typeof(resPayload) !== 'undefined' ? resPayload : '';
+        break;
       default:
-        resPayload = '';
         break;
       }
-
-
-      
 
       // send the reponse
       res.writeHead(statusCode);

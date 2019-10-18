@@ -1,10 +1,8 @@
-const fs = require('fs');
 const url = require('url');
-const path = require('path');
 const http = require('http');
 const https = require('https');
-const _db = require('../db/db_v2'); // OR '../fs/data' OR '../db/db_v1'
-const _db0 = require('../fs/data');
+const __database = require('../config').database.database;
+const _db = require('../' + __database + '/db');
 const _is = require('../lib/helpers').is;
 const config = require('../config').workers;
 const workers = {};
@@ -20,6 +18,7 @@ workers.log = (checkData, checkOutcome, state, timeOfCheck) => {
     'state' : state,
     'time' : timeOfCheck
   };
+  console.log("Workers: Check with id " + checkData.id + " is " + state);
 
 };
 
@@ -91,7 +90,7 @@ workers.performCheck = (checkData) => {
       }
     });
 
-    req.on('timeout', (err) => {
+    req.on('timeout', () => {
       checkOutcome.error = {
         error: true,
         value: 'timeout'

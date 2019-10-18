@@ -8,19 +8,22 @@ const  lib = {
     port,
     password
   },
+  database : {
+    database : 'db' // Choose bewteen file-system based ('fs') or psql based ('db') databas.
+  },
   hashingSecret: 'topSecret',
   server : {
     httpPort: 80,
     httpsPort: 443,
   },
   handlers : {
-    minPasswordLength: 10,
+    minPasswordLength: 1,
     tokenIDLength: 32,
     checkIdLength: 32,
     maxChecksLimit: 10
   },
   workers : {
-    checkFrequencyInSeconds: 15
+    checkFrequencyInSeconds: 5
   },
   tempalteGlobals : {
     appName : 'is UP',
