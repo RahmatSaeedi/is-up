@@ -21,7 +21,7 @@ A web-status monitoring sites that checks whether they are down or not; A NodeJS
 # Dependencies
 See [package.json](package.json)
  - Node JS 12
- - optionally pg & pSQL
+ - optionally [`pg`](https://node-postgres.com/) & [pSQL](https://www.postgresql.org/)
 
  # Configurations
  Some configuration options, such as ports, hashing secret, applicaton name, ... are provided in the [`config.js`](config.js).
