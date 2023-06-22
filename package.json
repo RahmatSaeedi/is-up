@@ -2,7 +2,7 @@
   "name": "@rahmatsaeedi/is-up",
   "version": "1.0.0",
   "dependencies": {
-    "pg": "^7.12.1"
+    "pg": "^8.11.0"
   },
   "scripts": {
     "start": "node app.js",
